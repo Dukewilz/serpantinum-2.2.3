@@ -15,6 +15,8 @@ Item {
     property bool notifiedLow: false
     property bool notifiedCritical: false
 
+    onIsDesktopChanged: root.checkBattery()
+
     function sendNotification(summary, body, icon, urgency) {
         let u = urgency ? urgency : "normal";
         let ic = icon ? icon : "battery";
@@ -30,7 +32,7 @@ Item {
     }
 
     function checkBattery() {
-        if (root.isDesktop || !UPower.displayDevice.ready) return;
+        if (root.isDesktop || !UPower.displayDevice.ready || (typeof I18n !== "undefined" && !I18n.isReady)) return;
 
         let pct = root.batteryPercentage;
         let state = UPower.displayDevice.state;
@@ -80,6 +82,11 @@ Item {
                 root.notifiedCritical = false;
             }
         }
+    }
+
+    Connections {
+        target: (typeof I18n !== "undefined") ? I18n : null
+        function onLanguageChanged() { root.checkBattery(); }
     }
 
     Connections {

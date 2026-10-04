@@ -148,23 +148,24 @@
       },
       "dim": {
         "title": "Escurecer tela",
-        "desc": "Tempo antes de escurecer a saída"
+        "desc": "Reduzir o brilho da tela antes de bloquear"
       },
       "dpms": {
         "title": "Desligar tela (DPMS)",
-        "desc": "Tempo antes de apagar a tela por completo"
+        "desc": "Desligar o sinal de vídeo do monitor"
       },
       "lock": {
         "title": "Bloquear sessão",
-        "desc": "Tempo antes de exigir senha"
+        "desc": "Bloquear a sessão após um período de inatividade"
       },
       "suspend": {
         "title": "Suspender sistema",
-        "desc": "Tempo antes de colocar a máquina pra dormir"
+        "desc": "Suspender o sistema para o modo de suspensão"
       },
       "hooks": {
         "title": "Hooks (comandos shell)"
-      }
+      },
+      "custom_action_desc": "Ação e comando personalizados por tempo limite"
     },
     "welcome": {
       "by_author": "por @{author}",
@@ -384,6 +385,71 @@
         "style": {
           "title": "Estilo",
           "desc": "Escolha o estilo visual para o relógio e a data"
+        }
+      },
+      "vis": {
+        "bars": {
+          "title": "Quantidade de barras",
+          "desc": "Número de barras de frequência a exibir"
+        },
+        "alignment": {
+          "title": "Alinhamento",
+          "desc": "Centralizar o visualizador ou alinhar ao topo ou à base"
+        },
+        "align": {
+          "center": "Centro",
+          "top": "Topo",
+          "bottom": "Base",
+          "left": "Esquerda",
+          "right": "Direita"
+        },
+        "continuous": {
+          "title": "Onda contínua",
+          "desc": "Exibir uma onda suave em vez de barras discretas"
+        }
+      },
+      "sysmon": {
+        "style": {
+          "title": "Estilo do círculo",
+          "desc": "Aparência visual dos anéis de progresso",
+          "wave": "Onda",
+          "circle": "Círculo"
+        },
+        "cpu": {
+          "title": "Uso da CPU",
+          "desc": "Exibir o anel de utilização do processador"
+        },
+        "ram": {
+          "title": "Uso de memória",
+          "desc": "Exibir o anel de utilização de memória (RAM)"
+        },
+        "temp": {
+          "title": "Temperatura",
+          "desc": "Exibir o anel de temperatura do sistema"
+        },
+        "disk": {
+          "title": "Uso do disco",
+          "desc": "Exibir o anel de utilização do disco"
+        }
+      },
+      "bat": {
+        "show_percent": {
+          "title": "Mostrar porcentagem",
+          "desc": "Exibe a porcentagem numérica de carga da bateria"
+        },
+        "show_icon": {
+          "title": "Mostrar ícone",
+          "desc": "Exibe o ícone da bateria ou indicador gráfico"
+        },
+        "style": {
+          "title": "Estilo da bateria",
+          "desc": "Escolha a aparência visual do indicador de bateria",
+          "name": {
+            "classic": "Clássico",
+            "minimal": "Minimalista"
+          },
+          "classic": "Pílula com onda gradiente",
+          "minimal": "Cápsula estilo iOS/Android com tampa"
         }
       }
     },
@@ -696,7 +762,9 @@
     "placeholder": "Comece com > para um comando...",
     "tab_applications": "Aplicativos",
     "tab_files": "Arquivos",
-    "placeholder_files": "Buscar arquivos ou digitar caminho..."
+    "placeholder_files": "Buscar arquivos ou digitar caminho...",
+    "tab_emojis": "Emojis",
+    "placeholder_emojis": "Buscar emojis ou digitar palavra-chave..."
   },
   "calendar": {
     "loading": "Carregando...",

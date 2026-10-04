@@ -1229,6 +1229,7 @@ Item {
                         spacing: root.s(12)
 
                         ColumnLayout {
+                            z: 1
                             spacing: root.s(6)
                             opacity: root.introText
                             transform: Translate { x: root.s(25) * (1 - root.introText) }
@@ -1435,7 +1436,7 @@ Item {
                                 Layout.preferredHeight: root.s(32)
                                 cornerRadius: ThemeBackend.borderRadius
                                 buttonIcon: "󰒮"
-                                iconFontSize: root.s(21)
+                                iconFontSize: root.s(11)
                                 accentColor: ThemeBackend.surface0 || "#313244"
                                 textColor: isHoveredOrHighlighted ? (ThemeBackend.text || "#cdd6f4") : (ThemeBackend.subtext0 || "#a6adc8")
                                 Layout.alignment: Qt.AlignVCenter
@@ -1449,7 +1450,7 @@ Item {
                                 Layout.preferredHeight: root.s(43)
                                 cornerRadius: ThemeBackend.borderRadius
                                 buttonIcon: (root.targetPlayer && root.targetPlayer.isPlaying) ? "󰏤" : "󰐊"
-                                iconFontSize: root.s(32)
+                                iconFontSize: root.s(15)
                                 accentColor: ThemeBackend.surface0 || "#313244"
                                 textColor: isHoveredOrHighlighted ? (ThemeBackend.mauve || "#cba6f7") : (ThemeBackend.text || "#cdd6f4")
                                 Layout.alignment: Qt.AlignVCenter
@@ -1462,7 +1463,7 @@ Item {
                                 Layout.preferredHeight: root.s(32)
                                 cornerRadius: ThemeBackend.borderRadius
                                 buttonIcon: "󰒭"
-                                iconFontSize: root.s(21)
+                                iconFontSize: root.s(11)
                                 accentColor: ThemeBackend.surface0 || "#313244"
                                 textColor: isHoveredOrHighlighted ? (ThemeBackend.text || "#cdd6f4") : (ThemeBackend.subtext0 || "#a6adc8")
                                 Layout.alignment: Qt.AlignVCenter

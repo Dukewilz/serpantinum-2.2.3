@@ -188,15 +188,30 @@ Item {
         if (!id) return null;
         let tab = String(entry.tab || entry.searchTab || "").trim();
         let subtab = String(entry.subtab || entry.searchSubTab || "").trim();
-        let key = String(entry.key || (tab + "|" + subtab + "|" + id)).trim();
+
+        let norm = s => String(s || "").trim().toLowerCase().replace(/^guide\.tabs\./, "");
+        let cleanTab = norm(tab);
+        let cleanSubtab = norm(subtab);
+
+        let indices = resolveIndices(tab, subtab);
+        if (indices.tabIndex >= 0 && indices.tabIndex < tabsModel.length) {
+            let tModel = tabsModel[indices.tabIndex];
+            cleanTab = norm(tModel.key || tModel.id);
+            if (indices.subIndex >= 0 && tModel.subtabs && indices.subIndex < tModel.subtabs.length) {
+                let stModel = tModel.subtabs[indices.subIndex];
+                cleanSubtab = norm(stModel.key || stModel.id);
+            }
+        }
+
+        let key = cleanTab + "|" + cleanSubtab + "|" + id.toLowerCase();
         return {
             key: key,
             id: id,
             title: String(entry.title || "").trim(),
             desc: String(entry.desc || entry.description || "").trim(),
             description: String(entry.description || entry.desc || "").trim(),
-            tab: tab,
-            subtab: subtab,
+            tab: cleanTab,
+            subtab: cleanSubtab,
             icon: String(entry.icon || "󰒓").trim(),
             keywords: entry.keywords || entry.searchKeywords || "",
             target: entry.target || null,
@@ -234,8 +249,31 @@ Item {
             searchRebuildTimer.restart();
             return;
         }
+
+        let norm = s => String(s || "").trim().toLowerCase().replace(/^guide\.tabs\./, "");
+        let parts = key.split("|");
+        if (parts.length === 3) {
+            let cleanTab = norm(parts[0]);
+            let cleanSubtab = norm(parts[1]);
+            let indices = resolveIndices(parts[0], parts[1]);
+            if (indices.tabIndex >= 0 && indices.tabIndex < tabsModel.length) {
+                let tModel = tabsModel[indices.tabIndex];
+                cleanTab = norm(tModel.key || tModel.id);
+                if (indices.subIndex >= 0 && tModel.subtabs && indices.subIndex < tModel.subtabs.length) {
+                    let stModel = tModel.subtabs[indices.subIndex];
+                    cleanSubtab = norm(stModel.key || stModel.id);
+                }
+            }
+            let canonicalKey = cleanTab + "|" + cleanSubtab + "|" + parts[2].trim().toLowerCase();
+            if (searchIndexMap[canonicalKey]) {
+                delete searchIndexMap[canonicalKey];
+                searchRebuildTimer.restart();
+                return;
+            }
+        }
+
         for (let k in searchIndexMap) {
-            if (searchIndexMap[k] && searchIndexMap[k].id === key) {
+            if (searchIndexMap[k] && (searchIndexMap[k].id === key || searchIndexMap[k].id.toLowerCase() === key.toLowerCase())) {
                 delete searchIndexMap[k];
                 searchRebuildTimer.restart();
                 break;
@@ -501,20 +539,20 @@ Item {
 
     property var tabsModel: [
         { id: "Welcome", key: "welcome", name: "Welcome", icon: "󰋜", file: "WelcomeTab.qml", iconOffsetX: -1 },
-        { id: "General", key: "general", name: "General", icon: "󰒓", file: "general/GeneralTab.qml", iconOffsetX: -1 },
+        { id: "General", key: "general", name: "General", icon: "󰒓", file: "general/GeneralTab.qml", iconOffsetX: 0 },
         {
             id: "Display",
             key: "display",
             name: "Display",
             icon: "󰃠",
             file: "display/DisplayMainTab.qml",
-            iconOffsetX: -2,
+            iconOffsetX: 0,
             subtabs: [
-                { id: "DisplayGeneral", key: "display_general", name: "Display", icon: "󰃠", file: "display/DisplayMainTab.qml", iconOffsetX: -2 },
+                { id: "DisplayGeneral", key: "display_general", name: "Display", icon: "󰃠", file: "display/DisplayMainTab.qml", iconOffsetX: 1 },
                 { id: "DisplayWidgets", key: "display_widgets", name: "Widgets", icon: "󰕰", file: "display/DisplayWidgetsTab.qml", iconOffsetX: 0 }
             ]
         },
-        { id: "Theme", key: "theme", name: "Theme", icon: "✦", file: "theme/ThemeTab.qml", iconOffsetX: 0 },
+        { id: "Theme", key: "theme", name: "Theme", icon: "󰏘", file: "theme/ThemeTab.qml", iconOffsetX: 0 },
         {
             id: "Bar",
             key: "bar",
@@ -523,8 +561,8 @@ Item {
             file: "bar/BarGeneralTab.qml",
             iconOffsetX: -2,
             subtabs: [
-                { id: "BarGeneral", key: "bar_general", name: "General", icon: "󰒓", file: "bar/BarGeneralTab.qml", iconOffsetX: -1 },
-                { id: "BarModules", key: "bar_modules", name: "Modules", icon: "󰮯", file: "bar/BarModulesTab.qml", iconOffsetX: -1 }
+                { id: "BarGeneral", key: "bar_general", name: "General", icon: "󰒓", file: "bar/BarGeneralTab.qml", iconOffsetX: 1 },
+                { id: "BarModules", key: "bar_modules", name: "Modules", icon: "󰮯", file: "bar/BarModulesTab.qml", iconOffsetX: 0 }
             ]
         },
         { id: "Launcher", key: "launcher", name: "Launcher", icon: "󰵆", file: "LauncherTab.qml", iconOffsetX: 0 },
@@ -532,8 +570,8 @@ Item {
         { id: "On-Screen Display", key: "osd", name: "On-Screen Display", icon: "󰕾", file: "OnScreenDisplayTab.qml", iconOffsetX: 0 },
         { id: "Notifications", key: "notifications", name: "Notifications", icon: "󰂚", file: "notifications/NotificationsTab.qml", iconOffsetX: 0 },
         { id: "Wellbeing", key: "wellbeing", name: "Wellbeing", icon: "󰄉", file: "wellbeing/DigitalWellbeingTab.qml", iconOffsetX: 0 },
-        { id: "Idle", key: "idle", name: "Idle", icon: "󰒲", file: "IdleTab.qml", iconOffsetX: -2 },
-        { id: "About", key: "about", name: "About", icon: "", file: "AboutTab.qml", iconOffsetX: 0 }
+        { id: "Idle", key: "idle", name: "Idle", icon: "󰒲", file: "IdleTab.qml", iconOffsetX: 0 },
+        { id: "About", key: "about", name: "About", icon: "󰋽", file: "AboutTab.qml", iconOffsetX: 0 }
     ]
 
     StackView.onStatusChanged: {
@@ -1908,7 +1946,7 @@ Item {
 
                                             Text {
                                                 text: "󰅀"
-                                                font.family: ThemeBackend.fontFamily
+                                                font.family: ThemeBackend.iconFont
                                                 font.pixelSize: root.s(14)
                                                 color: tabHeaderDisplay.isDirectActive
                                                     ? ThemeBackend.crust
@@ -2140,7 +2178,7 @@ Item {
                                             Layout.preferredHeight: root.s(32)
                                             Layout.alignment: Qt.AlignVCenter
                                             cornerRadius: ThemeBackend.borderRadius
-                                            buttonIcon: "✦"
+                                            buttonIcon: "󰏘"
                                             iconOffsetX: root.tabsModel[3].iconOffsetX ?? 0
                                             iconFontSize: root.s(16)
                                             accentColor: ThemeBackend.surface0
@@ -2244,7 +2282,7 @@ Item {
 
                                             Text {
                                                 text: "󰅀"
-                                                font.family: ThemeBackend.fontFamily
+                                                font.family: ThemeBackend.iconFont
                                                 font.pixelSize: root.s(14)
                                                 color: tabHeaderBar.isDirectActive
                                                     ? ThemeBackend.crust
@@ -2890,7 +2928,7 @@ Item {
                                             Layout.preferredHeight: root.s(32)
                                             Layout.alignment: Qt.AlignVCenter
                                             cornerRadius: ThemeBackend.borderRadius
-                                            buttonIcon: ""
+                                            buttonIcon: "󰋽"
                                             iconOffsetX: root.tabsModel[11].iconOffsetX ?? 0
                                             iconFontSize: root.s(16)
                                             accentColor: ThemeBackend.surface0

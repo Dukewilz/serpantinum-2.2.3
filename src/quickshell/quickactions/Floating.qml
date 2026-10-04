@@ -403,6 +403,7 @@ Variants {
 
             property real containerRadius: s(16)
             property real outerCornerRadius: s(24)
+            property real edgeBleed: Math.max(2, Math.ceil(s(2)))
 
             property real h_in: s(26)
             property real h_ac: s(86)
@@ -442,7 +443,7 @@ Variants {
             property real visibleProgress: isSidebarVisible ? 1.0 : 0.0
             Behavior on visibleProgress {
                 enabled: !floatingWidget.disableAnim
-                NumberAnimation { duration: 300; easing.type: Easing.OutExpo }
+                NumberAnimation { duration: 380; easing.type: Easing.OutQuart }
             }
 
             property real currentExtraWidth: (expandedWidth + expandedPadding) * expandProgress
@@ -451,7 +452,7 @@ Variants {
             property real totalSidebarWidth: sidebarW + currentExtraWidth
 
             property var activeMaskAABB: {
-                if (!floatingWidget.isSidebarVisible) return Qt.rect(0, 0, 0, 0);
+                if (!floatingWidget.isSidebarVisible && floatingWidget.visibleProgress <= 0.001) return Qt.rect(0, 0, 0, 0);
                 let cw = sidebarContainer.width;
                 let ch = sidebarContainer.height;
                 let cx = sidebarContainer.x + cw / 2;
@@ -529,25 +530,25 @@ Variants {
                 Region {
                     x: leftBound
                     y: floatingWidget.leftEdgeA_y
-                    width: floatingWidget.leftEdgeA_h > 0 ? floatingWidget.edgeHitSize : 0
+                    width: floatingWidget.edgeHitSize
                     height: floatingWidget.leftEdgeA_h
                 }
                 Region {
                     x: leftBound
                     y: floatingWidget.leftEdgeB_y
-                    width: floatingWidget.leftEdgeB_h > 0 ? floatingWidget.edgeHitSize : 0
+                    width: floatingWidget.edgeHitSize
                     height: floatingWidget.leftEdgeB_h
                 }
                 Region {
                     x: rightBound - floatingWidget.edgeHitSize
                     y: floatingWidget.rightEdgeA_y
-                    width: floatingWidget.rightEdgeA_h > 0 ? floatingWidget.edgeHitSize : 0
+                    width: floatingWidget.edgeHitSize
                     height: floatingWidget.rightEdgeA_h
                 }
                 Region {
                     x: rightBound - floatingWidget.edgeHitSize
                     y: floatingWidget.rightEdgeB_y
-                    width: floatingWidget.rightEdgeB_h > 0 ? floatingWidget.edgeHitSize : 0
+                    width: floatingWidget.edgeHitSize
                     height: floatingWidget.rightEdgeB_h
                 }
 
@@ -559,10 +560,10 @@ Variants {
                 }
 
                 Region {
-                    x: floatingWidget.isSidebarVisible ? floatingWidget.activeMaskAABB.x : 0
-                    y: floatingWidget.isSidebarVisible ? floatingWidget.activeMaskAABB.y : 0
-                    width: floatingWidget.isSidebarVisible ? floatingWidget.activeMaskAABB.width : 0
-                    height: floatingWidget.isSidebarVisible ? floatingWidget.activeMaskAABB.height : 0
+                    x: (floatingWidget.isSidebarVisible || floatingWidget.visibleProgress > 0.001) ? floatingWidget.activeMaskAABB.x : 0
+                    y: (floatingWidget.isSidebarVisible || floatingWidget.visibleProgress > 0.001) ? floatingWidget.activeMaskAABB.y : 0
+                    width: (floatingWidget.isSidebarVisible || floatingWidget.visibleProgress > 0.001) ? floatingWidget.activeMaskAABB.width : 0
+                    height: (floatingWidget.isSidebarVisible || floatingWidget.visibleProgress > 0.001) ? floatingWidget.activeMaskAABB.height : 0
                 }
             }
 
@@ -651,19 +652,35 @@ Variants {
                 return floatingWidget.controlAreaHeight + controlSpacing + activeTabH + inactiveTabsH + tabsSpacing + margins;
             }
 
-            property real sidebarW: s(31)
+            property real sidebarW: Math.round(s(31))
 
             property real sidebarTargetX: {
-                if (activeEdge === "left") return leftBound;
-                if (activeEdge === "right") return rightBound - sidebarW;
-                if (activeEdge === "bottom" || activeEdge === "top") return clampedCenterX - sidebarW / 2;
+                if (activeEdge === "left") {
+                    let hiddenX = leftBound - sidebarW - s(20);
+                    let shownX = Math.round(leftBound);
+                    return hiddenX + (shownX - hiddenX) * visibleProgress;
+                }
+                if (activeEdge === "right") {
+                    let hiddenX = rightBound + s(20);
+                    let shownX = Math.round(rightBound - sidebarW);
+                    return hiddenX + (shownX - hiddenX) * visibleProgress;
+                }
+                if (activeEdge === "bottom" || activeEdge === "top") return Math.round(clampedCenterX - sidebarW / 2);
                 return 0;
             }
 
             property real sidebarTargetY: {
-                if (activeEdge === "left" || activeEdge === "right") return clampedCenterY - baseSidebarH / 2;
-                if (activeEdge === "bottom") return bottomBound - sidebarW / 2 - baseSidebarH / 2;
-                if (activeEdge === "top") return topBound + sidebarW / 2 - baseSidebarH / 2;
+                if (activeEdge === "left" || activeEdge === "right") return Math.round(clampedCenterY - baseSidebarH / 2);
+                if (activeEdge === "bottom") {
+                    let hiddenY = bottomBound + s(10) - baseSidebarH / 2 + sidebarW / 2;
+                    let shownY = Math.round(bottomBound - sidebarW / 2 - baseSidebarH / 2);
+                    return hiddenY + (shownY - hiddenY) * visibleProgress;
+                }
+                if (activeEdge === "top") {
+                    let hiddenY = topBound - baseSidebarH - s(20);
+                    let shownY = Math.round(topBound + sidebarW / 2 - baseSidebarH / 2);
+                    return hiddenY + (shownY - hiddenY) * visibleProgress;
+                }
                 return 0;
             }
 
@@ -1033,26 +1050,24 @@ Variants {
                 width: floatingWidget.sidebarW
                 height: floatingWidget.baseSidebarH
 
+                visible: floatingWidget.isSidebarVisible || floatingWidget.visibleProgress > 0.001
+
                 transformOrigin: Item.Center
                 rotation: floatingWidget.targetRotation
                 Behavior on rotation { enabled: !floatingWidget.disableAnim && floatingWidget.isSidebarVisible; NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
 
-                x: {
-                    if (floatingWidget.isSidebarVisible) return floatingWidget.sidebarTargetX;
-                    if (floatingWidget.activeEdge === "left") return leftBound - width - floatingWidget.s(20);
-                    if (floatingWidget.activeEdge === "right") return rightBound + floatingWidget.s(20);
-                    return floatingWidget.sidebarTargetX;
+                x: floatingWidget.sidebarTargetX
+                y: floatingWidget.sidebarTargetY
+
+                Behavior on x {
+                    enabled: !floatingWidget.disableAnim && floatingWidget.isSidebarVisible && (floatingWidget.activeEdge === "bottom" || floatingWidget.activeEdge === "top")
+                    NumberAnimation { duration: 350; easing.type: Easing.OutExpo }
                 }
 
-                y: {
-                    if (floatingWidget.isSidebarVisible) return floatingWidget.sidebarTargetY;
-                    if (floatingWidget.activeEdge === "bottom") return bottomBound + floatingWidget.s(10) - floatingWidget.baseSidebarH / 2 + floatingWidget.sidebarW / 2;
-                    if (floatingWidget.activeEdge === "top") return topBound - floatingWidget.baseSidebarH - floatingWidget.s(20);
-                    return floatingWidget.sidebarTargetY;
+                Behavior on y {
+                    enabled: !floatingWidget.disableAnim && floatingWidget.isSidebarVisible && (floatingWidget.activeEdge === "left" || floatingWidget.activeEdge === "right")
+                    NumberAnimation { duration: 350; easing.type: Easing.OutExpo }
                 }
-
-                Behavior on x { enabled: !floatingWidget.disableAnim && (floatingWidget.isSidebarVisible || floatingWidget.visibleProgress > 0); NumberAnimation { duration: 350; easing.type: Easing.OutExpo } }
-                Behavior on y { enabled: !floatingWidget.disableAnim && (floatingWidget.isSidebarVisible || floatingWidget.visibleProgress > 0); NumberAnimation { duration: 350; easing.type: Easing.OutExpo } }
 
                 Item {
                     id: morphOrigin
@@ -1076,9 +1091,9 @@ Variants {
 
                     Shape {
                         visible: floatingWidget.outerCornerRadius > 0.5
-                        x: 0
+                        x: -floatingWidget.edgeBleed
                         y: -floatingWidget.outerCornerRadius
-                        width: floatingWidget.outerCornerRadius
+                        width: floatingWidget.outerCornerRadius + floatingWidget.edgeBleed
                         height: floatingWidget.outerCornerRadius
                         preferredRendererType: Shape.CurveRenderer
                         ShapePath {
@@ -1087,22 +1102,23 @@ Variants {
                             startX: 0
                             startY: 0
                             PathLine { x: 0; y: floatingWidget.outerCornerRadius }
-                            PathLine { x: floatingWidget.outerCornerRadius; y: floatingWidget.outerCornerRadius }
+                            PathLine { x: floatingWidget.edgeBleed + floatingWidget.outerCornerRadius; y: floatingWidget.outerCornerRadius }
                             PathArc {
-                                x: 0
+                                x: floatingWidget.edgeBleed
                                 y: 0
                                 radiusX: floatingWidget.outerCornerRadius
                                 radiusY: floatingWidget.outerCornerRadius
                                 direction: PathArc.Clockwise
                             }
+                            PathLine { x: 0; y: 0 }
                         }
                     }
 
                     Shape {
                         visible: floatingWidget.outerCornerRadius > 0.5
-                        x: 0
+                        x: -floatingWidget.edgeBleed
                         y: parent.height
-                        width: floatingWidget.outerCornerRadius
+                        width: floatingWidget.outerCornerRadius + floatingWidget.edgeBleed
                         height: floatingWidget.outerCornerRadius
                         preferredRendererType: Shape.CurveRenderer
                         ShapePath {
@@ -1111,22 +1127,23 @@ Variants {
                             startX: 0
                             startY: floatingWidget.outerCornerRadius
                             PathLine { x: 0; y: 0 }
-                            PathLine { x: floatingWidget.outerCornerRadius; y: 0 }
+                            PathLine { x: floatingWidget.edgeBleed + floatingWidget.outerCornerRadius; y: 0 }
                             PathArc {
-                                x: 0
+                                x: floatingWidget.edgeBleed
                                 y: floatingWidget.outerCornerRadius
                                 radiusX: floatingWidget.outerCornerRadius
                                 radiusY: floatingWidget.outerCornerRadius
                                 direction: PathArc.Counterclockwise
                             }
+                            PathLine { x: 0; y: floatingWidget.outerCornerRadius }
                         }
                     }
 
                     Rectangle {
                         id: morphingBackground
-                        x: 0
+                        x: -floatingWidget.edgeBleed
                         y: 0
-                        width: parent.width
+                        width: parent.width + floatingWidget.edgeBleed
                         height: parent.height
                         radius: floatingWidget.containerRadius
                         topLeftRadius: 0

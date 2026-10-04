@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import "../../"
+import "../../bar"
 import "../../reusables"
 import "../../reusables/guide"
 
@@ -82,7 +83,7 @@ Item {
     property bool autohide: barSettings.autohide !== undefined ? barSettings.autohide : false
     property int autohideTimeout: barSettings.autohideTimeout !== undefined ? barSettings.autohideTimeout : 1000
     property int workspaceCount: barSettings.workspaceCount !== undefined ? barSettings.workspaceCount : 8
-    property int cavaBars: barSettings.cava && barSettings.cava.bars !== undefined ? barSettings.cava.bars : 10
+    property int cavaBars: barSettings.visBarCount !== undefined ? barSettings.visBarCount : barSettings.cava && barSettings.cava.bars !== undefined ? barSettings.cava.bars : 10
     property int cavaBarWidth: barSettings.cava && barSettings.cava.barWidth !== undefined ? barSettings.cava.barWidth : 3
     property int cavaSpacing: barSettings.cava && barSettings.cava.spacing !== undefined ? barSettings.cava.spacing : 3
     property bool innerPillEnabled: !barSettings.innerPill || barSettings.innerPill.enabled !== false
@@ -338,10 +339,11 @@ Item {
             "vol": ThemeBackend.peach,
             "bat": ThemeBackend.green
         };
+        let mType = BarModuleRegistry.types ? BarModuleRegistry.types[id] : null;
         return {
             "moduleId": id,
-            "moduleLabel": labels[id] || id,
-            "moduleIcon": icons[id] || "󰅂",
+            "moduleLabel": labels[id] || (mType ? mType.name : id),
+            "moduleIcon": icons[id] || (mType ? mType.icon : "󰅂"),
             "moduleColor": colorToString(colors[id] || ThemeBackend.text),
             "isPlaceholder": false,
             "placeholderWidth": 0,
@@ -448,7 +450,7 @@ Item {
         add(c, centerModel);
         add(r, rightModel);
 
-        let allKeys = ["left", "workspaces", "focus", "timedate", "info", "weather", "media", "vis", "tray", "sysmon", "kb", "wifi", "bt", "vol", "bat"];
+        let allKeys = BarModuleRegistry.moduleIds();
         for (let i = 0; i < allKeys.length; i++) {
             if (!used[allKeys[i]]) availableModel.append(getModuleInfo(allKeys[i]));
         }
@@ -817,7 +819,7 @@ Item {
         barTabRoot.autohideTimeout = ts.autohideTimeout !== undefined ? ts.autohideTimeout : 1000;
         barTabRoot.workspaceCount = ts.workspaceCount !== undefined ? ts.workspaceCount : 8;
         let cava = ts.cava || barTabRoot.defaultBarSettings.cava;
-        barTabRoot.cavaBars = cava.bars !== undefined ? cava.bars : 10;
+        barTabRoot.cavaBars = ts.visBarCount !== undefined ? ts.visBarCount : (cava.bars !== undefined ? cava.bars : 10);
         barTabRoot.cavaBarWidth = cava.barWidth !== undefined ? cava.barWidth : 3;
         barTabRoot.cavaSpacing = cava.spacing !== undefined ? cava.spacing : 3;
         let pill = ts.innerPill || barTabRoot.defaultBarSettings.innerPill;
@@ -873,7 +875,7 @@ Item {
         current.autohideTimeout = barTabRoot.autohideTimeout;
         current.workspaceCount = barTabRoot.workspaceCount;
         current.cava = {
-            bars: Math.max(4, Math.min(24, Math.round(barTabRoot.cavaBars))),
+            bars: Math.max(4, Math.min(64, Math.round(barTabRoot.cavaBars))),
             barWidth: Math.max(2, Math.min(6, Math.round(barTabRoot.cavaBarWidth))),
             spacing: Math.max(1, Math.min(6, Math.round(barTabRoot.cavaSpacing)))
         };
@@ -1575,149 +1577,9 @@ Item {
                         columnSpacing: rootObj.s(8)
                         rowSpacing: rootObj.s(8)
 
-                        LeftNumberSetting { title: "CAVA bars"; hint: "Visualizer density"; currentValue: barTabRoot.cavaBars; minimumValue: 4; maximumValue: 24; onValueCommitted: function(v) { barTabRoot.cavaBars = Math.round(v); barTabRoot.updateBarSettings(); } }
+                        LeftNumberSetting { title: "CAVA bars"; hint: "Visualizer density"; currentValue: barTabRoot.cavaBars; minimumValue: 4; maximumValue: 64; onValueCommitted: function(v) { barTabRoot.cavaBars = Math.round(v); barTabRoot.updateBarSettings(); let bs = Config.getSetting("bar", {}); bs.visBarCount = Math.round(v); bs.sideVisBarCount = Math.round(v); Config.setSetting("bar", bs); let ss = Config.getSetting("sideBar", {}); ss.visBarCount = Math.round(v); Config.setSetting("sideBar", ss); } }
                         LeftNumberSetting { title: "CAVA width"; hint: "Visualizer bar width"; currentValue: barTabRoot.cavaBarWidth; minimumValue: 2; maximumValue: 6; onValueCommitted: function(v) { barTabRoot.cavaBarWidth = Math.round(v); barTabRoot.updateBarSettings(); } }
                         LeftNumberSetting { title: "CAVA spacing"; hint: "Gap between bars"; currentValue: barTabRoot.cavaSpacing; minimumValue: 1; maximumValue: 6; onValueCommitted: function(v) { barTabRoot.cavaSpacing = Math.round(v); barTabRoot.updateBarSettings(); } }
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                implicitHeight: rowAutohideLayout.implicitHeight + rootObj.s(24)
-                radius: ThemeBackend.borderRadius
-                color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                border.width: 0
-
-                RowLayout {
-                    id: rowAutohideLayout
-                    anchors.left: parent.left
-                    anchors.leftMargin: rootObj.s(14)
-                    anchors.right: parent.right
-                    anchors.rightMargin: rootObj.s(14)
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: rootObj.s(12)
-
-                    IconButton {
-                        enabled: false
-                        size: rootObj.s(32)
-                        Layout.preferredWidth: rootObj.s(32)
-                        Layout.preferredHeight: rootObj.s(32)
-                        Layout.alignment: Qt.AlignVCenter
-                        cornerRadius: ThemeBackend.borderRadius
-                        buttonIcon: "󰈉"
-                        iconFontSize: rootObj.s(16)
-                        accentColor: ThemeBackend.surface0
-                        textColor: "#ffffff"
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-                        spacing: rootObj.s(2)
-                        Text { Layout.fillWidth: true; text: I18n.t("guide.bar.autohide.title"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                        Text { Layout.fillWidth: true; text: I18n.t("guide.bar.autohide.desc"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                    }
-
-                    Toggle {
-                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                        checked: barTabRoot.autohide
-                        accentColor: ThemeBackend.mauve; baseColor: ThemeBackend.surface1; handleColor: ThemeBackend.crust; handleOffColor: ThemeBackend.text
-                        onToggled: function(c) {
-                            barTabRoot.clearPendingGroup();
-                            barTabRoot.autohide = c;
-                            barTabRoot.updateBarSettings();
-                        }
-                    }
-                }
-            }
-
-            Item {
-                id: timeoutSectionWrapper
-                Layout.fillWidth: true
-                property bool isOpen: barTabRoot.autohide
-                clip: true
-                visible: implicitHeight > 0
-                opacity: isOpen ? 1.0 : 0.0
-                implicitHeight: isOpen ? timeoutInnerBox.implicitHeight : 0
-
-                Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-                Behavior on implicitHeight { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-
-                Rectangle {
-                    id: timeoutInnerBox
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    implicitHeight: rowTimeoutLayout.implicitHeight + rootObj.s(24)
-                    radius: ThemeBackend.borderRadius
-                    color: Qt.alpha(ThemeBackend.surface0, 0.4)
-                    border.width: 0
-
-                    RowLayout {
-                        id: rowTimeoutLayout
-                        anchors.left: parent.left
-                        anchors.leftMargin: rootObj.s(14)
-                        anchors.right: parent.right
-                        anchors.rightMargin: rootObj.s(14)
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: rootObj.s(12)
-
-                        IconButton {
-                            enabled: false
-                            size: rootObj.s(32)
-                            Layout.preferredWidth: rootObj.s(32)
-                            Layout.preferredHeight: rootObj.s(32)
-                            Layout.alignment: Qt.AlignVCenter
-                            cornerRadius: ThemeBackend.borderRadius
-                            buttonIcon: "󰔛"
-                            iconFontSize: rootObj.s(16)
-                            accentColor: ThemeBackend.surface0
-                            textColor: "#ffffff"
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-                            spacing: rootObj.s(2)
-                            Text { Layout.fillWidth: true; text: I18n.t("guide.bar.timeout.title"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(13); color: ThemeBackend.text }
-                            Text { Layout.fillWidth: true; text: I18n.t("guide.bar.timeout.desc"); font.family: ThemeBackend.fontFamily; font.pixelSize: rootObj.s(11); color: ThemeBackend.subtext0 }
-                        }
-
-                        RowLayout {
-                            Layout.alignment: Qt.AlignLeft
-                            spacing: rootObj.s(12)
-                            Layout.rightMargin: rootObj.s(8)
-
-                            Draggable {
-                                id: timeoutSlider
-                                implicitWidth: rootObj.s(220)
-                                implicitHeight: rootObj.s(18)
-                                from: 250
-                                to: 10000
-                                stepSize: 50
-                                defaultValue: 1000
-                                showValueBubble: true
-                                valueFormatter: function(v) { return Math.round(v) + " ms" }
-                                value: barTabRoot.autohideTimeout
-                                backgroundColor: ThemeBackend.surface0
-                                accentColor: ThemeBackend.mauve
-                                handleColor: ThemeBackend.text
-                                handleBorderColor: ThemeBackend.mantle
-                                onMoved: function(val) {
-                                    barTabRoot.clearPendingGroup();
-                                    let rounded = Math.round(val);
-                                    if (barTabRoot.autohideTimeout !== rounded) {
-                                        barTabRoot.autohideTimeout = rounded;
-                                        barWidthDebounceTimer.restart();
-                                    }
-                                }
-                                onDragFinished: {
-                                    barWidthDebounceTimer.stop();
-                                    barTabRoot.updateBarSettings();
-                                }
-                            }
-                        }
                     }
                 }
             }

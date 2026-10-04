@@ -148,23 +148,24 @@
       },
       "dim": {
         "title": "Dim screen",
-        "desc": "Time before dimming output"
+        "desc": "Reduce screen brightness before locking"
       },
       "dpms": {
         "title": "Display off (DPMS)",
-        "desc": "Time before turning screen completely off"
+        "desc": "Turn off monitor display signal"
       },
       "lock": {
         "title": "Lock session",
-        "desc": "Time before demanding password"
+        "desc": "Lock the session after a period of inactivity"
       },
       "suspend": {
         "title": "System suspend",
-        "desc": "Time before putting machine to sleep"
+        "desc": "Suspend the system to sleep mode"
       },
       "hooks": {
         "title": "Hooks (shell commands)"
-      }
+      },
+      "custom_action_desc": "Custom timeout action and command"
     },
     "welcome": {
       "by_author": "by @{author}",
@@ -384,6 +385,71 @@
         "style": {
           "title": "Style",
           "desc": "Choose the visual style for the clock and date display"
+        }
+      },
+      "vis": {
+        "bars": {
+          "title": "Amount of Bars",
+          "desc": "Number of frequency bars to display"
+        },
+        "alignment": {
+          "title": "Alignment",
+          "desc": "Center the visualizer or align to top or bottom"
+        },
+        "align": {
+          "center": "Center",
+          "top": "Top",
+          "bottom": "Bottom",
+          "left": "Left",
+          "right": "Right"
+        },
+        "continuous": {
+          "title": "Continuous Wave",
+          "desc": "Render a smooth fluid wave instead of discrete bars"
+        }
+      },
+      "sysmon": {
+        "style": {
+          "title": "Circle Style",
+          "desc": "Visual appearance of the progress rings",
+          "wave": "Wave",
+          "circle": "Circle"
+        },
+        "cpu": {
+          "title": "CPU Usage",
+          "desc": "Display processor utilization ring"
+        },
+        "ram": {
+          "title": "Memory Usage",
+          "desc": "Display memory (RAM) utilization ring"
+        },
+        "temp": {
+          "title": "Temperature",
+          "desc": "Display system temperature ring"
+        },
+        "disk": {
+          "title": "Disk Usage",
+          "desc": "Display storage disk utilization ring"
+        }
+      },
+      "bat": {
+        "show_percent": {
+          "title": "Show Percentage",
+          "desc": "Display the numeric battery charge percentage"
+        },
+        "show_icon": {
+          "title": "Show Icon",
+          "desc": "Display the battery icon or graphic indicator"
+        },
+        "style": {
+          "title": "Battery Style",
+          "desc": "Choose the visual appearance of the battery indicator",
+          "name": {
+            "classic": "Classic",
+            "minimal": "Minimal"
+          },
+          "classic": "Pill with gradient wave fill",
+          "minimal": "iOS/Android capsule with cap"
         }
       }
     },
@@ -696,7 +762,9 @@
     "placeholder": "Start with > for a command...",
     "tab_applications": "Applications",
     "tab_files": "Files",
-    "placeholder_files": "Search files or enter path..."
+    "placeholder_files": "Search files or enter path...",
+    "tab_emojis": "Emojis",
+    "placeholder_emojis": "Search emojis by name or keyword..."
   },
   "calendar": {
     "loading": "Loading...",

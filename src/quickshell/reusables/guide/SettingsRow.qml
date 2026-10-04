@@ -246,10 +246,10 @@ Rectangle {
         let targetSubTabIdx = -1;
 
         while (p) {
-            if (targetSubTabIdx === -1 && p.subTabIndex !== undefined) {
+            if (targetSubTabIdx === -1 && p.subTabIndex !== undefined && p.subTabIndex !== null && p.subTabIndex >= 0) {
                 targetSubTabIdx = p.subTabIndex;
             }
-            if (targetTabIdx === -1 && p.tabIndex !== undefined) {
+            if (targetTabIdx === -1 && p.tabIndex !== undefined && p.tabIndex !== null && p.tabIndex >= 0) {
                 targetTabIdx = p.tabIndex;
             }
             p = p.parent;
@@ -279,6 +279,10 @@ Rectangle {
 
         let info = resolveTabInfo();
         let searchKey = info.tab + "|" + info.subtab + "|" + root.effectiveSettingId;
+
+        if (root.registeredSearchKey !== "" && root.registeredSearchKey !== searchKey) {
+            r.unregisterSearchItem(root.registeredSearchKey);
+        }
         root.registeredSearchKey = searchKey;
 
         r.registerSearchItem({

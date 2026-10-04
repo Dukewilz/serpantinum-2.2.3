@@ -13,6 +13,7 @@ Item {
     property string buttonText: ""
     property string subText: ""
     property string buttonIcon: ""
+    property string iconFont: ThemeBackend.iconFont
     property int iconFontSize: 15
     property int textFontSize: 12
     property real iconBoxWidth: buttonIcon !== "" ? Math.max(20, iconFontSize + 6) : 0
@@ -94,6 +95,7 @@ Item {
                     anchors.fill: parent
                     text: root.buttonIcon
                     pixelSize: root.iconFontSize
+                    fontFamily: root.iconFont
                     color: root.textColor
                 }
 

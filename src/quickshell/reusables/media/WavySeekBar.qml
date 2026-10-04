@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
+import QtQuick.Effects
 import "../"
 import "../../"
 
@@ -33,12 +34,13 @@ Item {
 
     property real handleSize: height < 30 ? Math.max(8, Math.min(14, height * 0.75)) : bar.s(17)
     property real strokeWidth: height < 30 ? Math.max(2.5, handleSize * 0.35) : bar.s(9)
-    property real amplitude: height < 30 ? Math.max(4, height * 0.45) : bar.s(20)
-    property int cycleMs: 8000
+    property real amplitude: height < 30 ? Math.max(3, height * 0.35) : bar.s(14)
+    property int cycleMs: 3000
     property real restingLevel: 0.0
 
     readonly property real cy: height - handleSize * (height < 30 ? 0.65 : 0.7)
     property real pad: handleSize / 2
+    property real mouseAreaHeight: height < 30 ? height : Math.min(height, Math.max(handleSize * 1.4, bar.s(22)))
     property bool isDragging: mouseArea.pressed
     signal moved(real val)
 
@@ -69,20 +71,16 @@ Item {
     property var layerColorStrs: []
     property var gridTables: []
     property var cachedGradients: []
-    property real cachedGradTop: -9999
-    property real cachedGradA: -9999
 
     property real scaleFactor: height < 30 ? (height / 35) : 1.0
+    readonly property real trackWidth: Math.max(10, bar.width - 2 * bar.pad)
+    readonly property real baseLen: (trackWidth > 0 ? (trackWidth / 3.0) : bar.s(65))
+
     property var layers: [
-        { color: bar.primaryColor, amp: 0.86, alpha: 0.32, taper: bar.s(70) * bar.scaleFactor, comps: [
-            { len: bar.s(245) * bar.scaleFactor, mult: 1, off: 1.10, w: 0.65 },
-            { len: bar.s(145) * bar.scaleFactor, mult: 2, off: 1.90, w: 0.35 } ] },
-        { color: bar.primaryColor, amp: 0.93, alpha: 0.56, taper: bar.s(80) * bar.scaleFactor, comps: [
-            { len: bar.s(300) * bar.scaleFactor, mult: 1, off: 0.55, w: 0.65 },
-            { len: bar.s(180) * bar.scaleFactor, mult: 2, off: 1.25, w: 0.35 } ] },
-        { color: bar.primaryColor, amp: 1.00, alpha: 0.82, taper: bar.s(90) * bar.scaleFactor, comps: [
-            { len: bar.s(360) * bar.scaleFactor, mult: 1, off: 0.00, w: 0.68 },
-            { len: bar.s(225) * bar.scaleFactor, mult: 2, off: 0.60, w: 0.32 } ] }
+        { color: bar.primaryColor, amp: 0.65, alpha: 0.50, taper: bar.s(130) * bar.scaleFactor, comps: [
+            { len: bar.baseLen * 1.75, mult: 1.0, off: 0.00, w: 1.0 } ] },
+        { color: bar.primaryColor, amp: 0.71, alpha: 0.90, taper: bar.s(105) * bar.scaleFactor, comps: [
+            { len: bar.baseLen * 1.05, mult: 2.2, off: 1.80, w: 1.0 } ] }
     ]
 
     function rgbaCol(col, a) {
@@ -103,9 +101,11 @@ Item {
         if (L) {
             for (var i = 0; i < L.length; i++) {
                 var curCol = L[i].color || bar.primaryColor;
+                var a1 = L[i].alpha;
+                var a0 = a1 >= 1.0 ? 1.0 : (a1 * 0.55);
                 arr.push({
-                    c0: rgbaCol(curCol, L[i].alpha * 0.55),
-                    c1: rgbaCol(curCol, L[i].alpha)
+                    c0: rgbaCol(curCol, a0),
+                    c1: rgbaCol(curCol, a1)
                 });
             }
         }
@@ -122,46 +122,67 @@ Item {
             var comps = L[li].comps;
             var layerSins = [];
             var layerCoss = [];
+            var layerSwellSins = [];
+            var layerSwellCoss = [];
             for (var k = 0; k < comps.length; k++) {
                 var p = comps[k];
                 var kFreq = (2 * Math.PI) / p.len;
+                var swellFreq = kFreq / 6.0;
+                var swellOff = (li === 0) ? 0.0 : Math.PI;
                 var sins = new Float64Array(maxSteps);
                 var coss = new Float64Array(maxSteps);
+                var swellSins = new Float64Array(maxSteps);
+                var swellCoss = new Float64Array(maxSteps);
                 for (var i = 0; i < maxSteps; i++) {
                     var x = bar.pad + i * bar.step;
                     var angle = kFreq * x + p.off;
                     sins[i] = Math.sin(angle);
                     coss[i] = Math.cos(angle);
+                    var swellAngle = swellFreq * x + swellOff;
+                    swellSins[i] = Math.sin(swellAngle);
+                    swellCoss[i] = Math.cos(swellAngle);
                 }
                 layerSins.push(sins);
                 layerCoss.push(coss);
+                layerSwellSins.push(swellSins);
+                layerSwellCoss.push(swellCoss);
             }
-            tables.push({ sins: layerSins, coss: layerCoss, maxSteps: maxSteps });
+            tables.push({
+                sins: layerSins,
+                coss: layerCoss,
+                swellSins: layerSwellSins,
+                swellCoss: layerSwellCoss,
+                maxSteps: maxSteps
+            });
         }
         bar.gridTables = tables;
     }
 
-    function hillFromGrid(table, comps, i, cosBetas, sinBetas) {
+    function hillFromGrid(table, comps, i, cosBetas, sinBetas, cosSwellBetas, sinSwellBetas) {
         var n = 0;
+        var mod = 1.0;
         for (var k = 0; k < comps.length; k++) {
             n += comps[k].w * (table.sins[k][i] * cosBetas[k] - table.coss[k][i] * sinBetas[k]);
+            var swellVal = table.swellSins[k][i] * cosSwellBetas[k] - table.swellCoss[k][i] * sinSwellBetas[k];
+            mod = 0.80 + 0.20 * swellVal;
         }
-        var base = (n + 0.85) / 1.85;
-        if (base <= 0) return 0;
-        if (base >= 1) base = 1;
-        return 0.5 * (1 - Math.cos(base * Math.PI));
+        var baseH = 0.5 * (1 + Math.max(-1.0, Math.min(1.0, n)));
+        return baseH * mod;
     }
 
-    function hillDirect(x, comps, phaseVal) {
+    function hillDirect(x, comps, phaseVal, li) {
         var n = 0;
+        var mod = 1.0;
+        var swellOff = (li === 0) ? 0.0 : Math.PI;
         for (var k = 0; k < comps.length; k++) {
             var p = comps[k];
             n += p.w * Math.sin((2 * Math.PI / p.len) * x - phaseVal * p.mult + p.off);
+            var swellFreq = (2 * Math.PI) / (p.len * 6.0);
+            var swellVal = Math.sin(swellFreq * x - phaseVal * p.mult * 0.5 + swellOff);
+            mod = 0.80 + 0.20 * swellVal;
         }
-        var base = (n + 0.85) / 1.85;
-        if (base <= 0) return 0;
-        if (base >= 1) base = 1;
-        return 0.5 * (1 - Math.cos(base * Math.PI));
+        var baseH = 0.5 * (1 + Math.max(-1.0, Math.min(1.0, n)));
+        return baseH * mod;
     }
 
     Component.onCompleted: {
@@ -186,6 +207,7 @@ Item {
     onWidthChanged: { rebuildGridTables(); if (bar.active) cv.requestPaint(); }
     onPadChanged: { rebuildGridTables(); if (bar.active) cv.requestPaint(); }
     onStepChanged: { rebuildGridTables(); if (bar.active) cv.requestPaint(); }
+    onBaseLenChanged: { rebuildGridTables(); if (bar.active) cv.requestPaint(); }
     onLayersChanged: { updateColors(); rebuildGridTables(); if (bar.active) cv.requestPaint(); }
 
     Timer {
@@ -193,9 +215,21 @@ Item {
         interval: 16
         repeat: true
         running: bar.active && (bar.playing || bar.ampFactor > 0.001)
+        property real lastTime: 0
+
+        onRunningChanged: {
+            if (!running) lastTime = 0;
+        }
+
         onTriggered: {
             var now = Date.now();
-            bar.phase = ((now % bar.cycleMs) / bar.cycleMs) * Math.PI * 2;
+            if (lastTime > 0) {
+                var dt = now - lastTime;
+                if (dt > 0 && dt < 1000) {
+                    bar.phase += (dt / bar.cycleMs) * Math.PI * 2;
+                }
+            }
+            lastTime = now;
             cv.requestPaint();
         }
     }
@@ -223,7 +257,7 @@ Item {
             var strokeW = bar.strokeWidth;
             var top = cy - strokeW / 2;
             var step = bar.step;
-            var startTaper = Math.max(bar.startTaperMin, Math.min(bar.startTaperMax, (endX - pad) * 0.6));
+            var startTaper = bar.startTaperMax;
             var currentPhase = bar.phase;
             var barAmp = bar.amplitude;
             var currentLiveAmp = bar.liveAmp;
@@ -251,20 +285,24 @@ Item {
                     var A = barAmp * ly.amp * currentLiveAmp;
                     if (A < 0.3) continue;
 
-                    var endTaperLen = Math.max(1.0, ly.taper * Math.min(1.0, (endX - pad) / (ly.taper * 1.5)));
+                    var endTaperLen = ly.taper;
 
-                    var g = (gradients && gradients[li] && bar.cachedGradTop === top && bar.cachedGradA === A)
+                    var g = (gradients && gradients[li] && gradients[li]._top === top && gradients[li]._a === A)
                         ? gradients[li]
                         : null;
 
                     if (!g) {
                         g = ctx.createLinearGradient(0, top - A, 0, top);
+                        var a1 = ly.alpha;
+                        var a0 = a1 >= 1.0 ? 1.0 : (a1 * 0.55);
                         var colPair = (colorStrs && colorStrs[li]) ? colorStrs[li] : {
-                            c0: bar.rgbaCol(ly.color || bar.primaryColor, ly.alpha * 0.55),
-                            c1: bar.rgbaCol(ly.color || bar.primaryColor, ly.alpha)
+                            c0: bar.rgbaCol(ly.color || bar.primaryColor, a0),
+                            c1: bar.rgbaCol(ly.color || bar.primaryColor, a1)
                         };
                         g.addColorStop(0.0, colPair.c0);
                         g.addColorStop(1.0, colPair.c1);
+                        g._top = top;
+                        g._a = A;
                         if (!gradients) gradients = [];
                         gradients[li] = g;
                     }
@@ -273,37 +311,40 @@ Item {
                     var numComps = comps.length;
                     var cosBetas = new Float64Array(numComps);
                     var sinBetas = new Float64Array(numComps);
+                    var cosSwellBetas = new Float64Array(numComps);
+                    var sinSwellBetas = new Float64Array(numComps);
                     for (var k = 0; k < numComps; k++) {
                         var beta = comps[k].mult * currentPhase;
                         cosBetas[k] = Math.cos(beta);
                         sinBetas[k] = Math.sin(beta);
+                        var swellBeta = comps[k].mult * 0.5 * currentPhase;
+                        cosSwellBetas[k] = Math.cos(swellBeta);
+                        sinSwellBetas[k] = Math.sin(swellBeta);
                     }
 
                     var table = hasTables ? tables[li] : null;
-                    var canUseGrid = table && table.sins && table.sins.length === numComps;
+                    var canUseGrid = table && table.sins && table.sins.length === numComps && table.swellSins && table.swellSins.length === numComps;
 
                     ctx.fillStyle = g;
                     ctx.beginPath();
                     ctx.moveTo(pad, cy);
 
                     var gridIdx = 0;
-                    for (var x = pad; x <= endX; x += step, gridIdx++) {
+                    for (var x = pad; ; x += step, gridIdx++) {
                         var curX = Math.min(x, endX);
                         var env = bar.easeQuintic((curX - pad) / startTaper) * bar.easeQuintic((endX - curX) / endTaperLen);
                         var h = (canUseGrid && curX === x && gridIdx < table.maxSteps)
-                            ? bar.hillFromGrid(table, comps, gridIdx, cosBetas, sinBetas)
-                            : bar.hillDirect(curX, comps, currentPhase);
+                            ? bar.hillFromGrid(table, comps, gridIdx, cosBetas, sinBetas, cosSwellBetas, sinSwellBetas)
+                            : bar.hillDirect(curX, comps, currentPhase, li);
                         var yPos = top - h * A * env;
                         ctx.lineTo(curX, yPos);
-                        if (curX === endX) break;
+                        if (curX >= endX) break;
                     }
                     ctx.lineTo(endX, top);
                     ctx.lineTo(endX, cy);
                     ctx.closePath();
                     ctx.fill();
                 }
-                bar.cachedGradTop = top;
-                bar.cachedGradA = A;
                 bar.cachedGradients = gradients;
             }
 
@@ -331,11 +372,24 @@ Item {
         Behavior on color {
             ColorAnimation { duration: 150 }
         }
+
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: "#000000"
+            shadowVerticalOffset: bar.s(1.0)
+            shadowHorizontalOffset: 0
+            shadowBlur: 0.35
+            shadowOpacity: 0.45
+        }
     }
 
     MouseArea {
         id: mouseArea
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: bar.mouseAreaHeight
+        y: Math.max(0, Math.min(bar.height - height, Math.round(bar.cy - height / 2)))
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
 

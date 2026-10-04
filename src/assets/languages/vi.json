@@ -148,23 +148,24 @@
       },
       "dim": {
         "title": "Làm mờ màn hình",
-        "desc": "Thời gian trước khi làm mờ màn hình"
+        "desc": "Giảm độ sáng màn hình trước khi khóa"
       },
       "dpms": {
         "title": "Tắt màn hình (DPMS)",
-        "desc": "Thời gian trước khi tắt hoàn toàn màn hình"
+        "desc": "Tắt tín hiệu màn hình hiển thị"
       },
       "lock": {
         "title": "Khóa phiên",
-        "desc": "Thời gian trước khi yêu cầu nhập mật khẩu"
+        "desc": "Khóa phiên làm việc sau một khoảng thời gian không hoạt động"
       },
       "suspend": {
         "title": "Ngủ đông hệ thống",
-        "desc": "Thời gian trước khi đưa máy vào chế độ ngủ"
+        "desc": "Đưa hệ thống vào chế độ ngủ"
       },
       "hooks": {
         "title": "Hook (lệnh shell)"
-      }
+      },
+      "custom_action_desc": "Hành động và lệnh hết thời gian tùy chỉnh"
     },
     "welcome": {
       "by_author": "bởi @{author}",
@@ -384,6 +385,71 @@
         "style": {
           "title": "Kiểu",
           "desc": "Chọn kiểu hiển thị cho đồng hồ và ngày"
+        }
+      },
+      "vis": {
+        "bars": {
+          "title": "Số lượng thanh",
+          "desc": "Số lượng thanh tần số hiển thị"
+        },
+        "alignment": {
+          "title": "Căn chỉnh",
+          "desc": "Căn giữa bộ trực quan hoặc căn theo phía trên hoặc dưới"
+        },
+        "align": {
+          "center": "Giữa",
+          "top": "Trên",
+          "bottom": "Dưới",
+          "left": "Trái",
+          "right": "Phải"
+        },
+        "continuous": {
+          "title": "Sóng liên tục",
+          "desc": "Hiển thị dạng sóng mượt mà thay vì các thanh riêng biệt"
+        }
+      },
+      "sysmon": {
+        "style": {
+          "title": "Kiểu vòng tròn",
+          "desc": "Giao diện vòng tiến trình",
+          "wave": "Sóng",
+          "circle": "Vòng tròn"
+        },
+        "cpu": {
+          "title": "Sử dụng CPU",
+          "desc": "Hiển thị vòng mức sử dụng bộ vi xử lý"
+        },
+        "ram": {
+          "title": "Sử dụng bộ nhớ",
+          "desc": "Hiển thị vòng mức sử dụng RAM"
+        },
+        "temp": {
+          "title": "Nhiệt độ",
+          "desc": "Hiển thị vòng nhiệt độ hệ thống"
+        },
+        "disk": {
+          "title": "Sử dụng ổ đĩa",
+          "desc": "Hiển thị vòng mức sử dụng bộ nhớ lưu trữ"
+        }
+      },
+      "bat": {
+        "show_percent": {
+          "title": "Hiển thị phần trăm",
+          "desc": "Hiển thị phần trăm pin dạng số"
+        },
+        "show_icon": {
+          "title": "Hiển thị biểu tượng",
+          "desc": "Hiển thị biểu tượng pin hoặc chỉ báo đồ họa"
+        },
+        "style": {
+          "title": "Kiểu pin",
+          "desc": "Chọn giao diện hiển thị của chỉ báo pin",
+          "name": {
+            "classic": "Cổ điển",
+            "minimal": "Tối giản"
+          },
+          "classic": "Dạng viên thuốc với sóng chuyển màu",
+          "minimal": "Dạng thỏi iOS/Android có nắp"
         }
       }
     },
@@ -696,7 +762,9 @@
     "placeholder": "Bắt đầu bằng dấu > để nhập lệnh...",
     "tab_applications": "Ứng dụng",
     "tab_files": "Tệp",
-    "placeholder_files": "Tìm kiếm tệp hoặc nhập đường dẫn..."
+    "placeholder_files": "Tìm kiếm tệp hoặc nhập đường dẫn...",
+    "tab_emojis": "Biểu tượng cảm xúc",
+    "placeholder_emojis": "Tìm kiếm biểu tượng cảm xúc hoặc nhập từ khóa..."
   },
   "calendar": {
     "loading": "Đang tải...",

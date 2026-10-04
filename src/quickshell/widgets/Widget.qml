@@ -20,6 +20,14 @@ PanelWindow {
 
     property var customProps: ({})
 
+    readonly property real auraMargin: 8
+
+    readonly property bool isSelected: typeof DesktopMenuController !== "undefined"
+        && DesktopMenuController.isVisible
+        && DesktopMenuController.mode === "widget"
+        && DesktopMenuController.targetWidgetId === String(root.wId)
+        && (!DesktopMenuController.screen || !root.screen || !DesktopMenuController.screen.name || !root.screen.name || DesktopMenuController.screen.name === root.screen.name)
+
     function applyCustomProps() {
         let it = faceLoader.item;
         if (!it || !customProps) return;
@@ -88,11 +96,11 @@ PanelWindow {
 
     anchors.top: true
     anchors.left: true
-    margins.left: animX
-    margins.top: animY
+    margins.left: animX - root.auraMargin
+    margins.top: animY - root.auraMargin
 
-    implicitWidth: (Math.round(wRotation || 0) % 180 === 0) ? effectiveWidth : effectiveHeight
-    implicitHeight: (Math.round(wRotation || 0) % 180 === 0) ? effectiveHeight : effectiveWidth
+    implicitWidth: ((Math.round(wRotation || 0) % 180 === 0) ? effectiveWidth : effectiveHeight) + (root.auraMargin * 2)
+    implicitHeight: ((Math.round(wRotation || 0) % 180 === 0) ? effectiveHeight : effectiveWidth) + (root.auraMargin * 2)
 
     Component.onCompleted: {
         Qt.callLater(() => {
@@ -179,6 +187,168 @@ PanelWindow {
         }
     }
 
+    Item {
+        id: auraContainer
+        width: faceLoader.width + (root.auraMargin * 2)
+        height: faceLoader.height + (root.auraMargin * 2)
+        anchors.centerIn: faceLoader
+        rotation: faceLoader.rotation
+        visible: opacity > 0.001
+        opacity: root.isSelected ? 1.0 : 0.0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 150
+                easing.type: Easing.OutQuad
+            }
+        }
+
+        Canvas {
+            id: auraCanvas
+            anchors.fill: parent
+            antialiasing: true
+
+            property real phase: 0.0
+
+            NumberAnimation on phase {
+                running: root.isSelected && auraContainer.opacity > 0.001
+                from: 0.0
+                to: Math.PI * 2
+                duration: 3200
+                loops: Animation.Infinite
+            }
+
+            onPhaseChanged: {
+                if (auraContainer.opacity > 0.001) requestPaint();
+            }
+
+            Connections {
+                target: root
+                function onIsSelectedChanged() {
+                    auraCanvas.requestPaint();
+                }
+                function onEffectiveWidthChanged() {
+                    auraCanvas.requestPaint();
+                }
+                function onEffectiveHeightChanged() {
+                    auraCanvas.requestPaint();
+                }
+            }
+
+            onPaint: {
+                let ctx = getContext("2d");
+                ctx.clearRect(0, 0, width, height);
+                if (auraContainer.opacity <= 0.001) return;
+
+                let w = width;
+                let h = height;
+                if (w <= 0 || h <= 0) return;
+
+                let baseR = 12;
+                if (typeof ThemeBackend !== "undefined" && ThemeBackend.borderRadius !== undefined && ThemeBackend.borderRadius !== null) {
+                    baseR = ThemeBackend.borderRadius;
+                }
+                let strokePad = 2.5;
+                let r = Math.max(2, Math.min(baseR + 4, (w - 2 * strokePad) / 2, (h - 2 * strokePad) / 2));
+
+                let x0 = strokePad;
+                let y0 = strokePad;
+                let x1 = w - strokePad;
+                let y1 = h - strokePad;
+
+                let straightX = (x1 - r) - (x0 + r);
+                let straightY = (y1 - r) - (y0 + r);
+                let arcLen = 0.5 * Math.PI * r;
+                let totalP = 2 * (straightX + straightY) + 4 * arcLen;
+                if (totalP <= 0) return;
+
+                let cycles = Math.max(4, Math.round(totalP / 28));
+                let freq = (2 * Math.PI * cycles) / totalP;
+                let amp = 0.9;
+                let step = 4.0;
+                let ph = auraCanvas.phase;
+
+                let dist = 0;
+                ctx.beginPath();
+                let started = false;
+
+                function addPoint(x, y, nx, ny) {
+                    let wOff = amp * Math.sin(freq * dist + ph);
+                    let px = x + wOff * nx;
+                    let py = y + wOff * ny;
+                    if (!started) {
+                        ctx.moveTo(px, py);
+                        started = true;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+
+                for (let d = 0; d < straightX; d += step) {
+                    dist += (d === 0 ? 0 : step);
+                    addPoint(x0 + r + d, y0, 0, -1);
+                }
+                dist += (straightX % step === 0 ? 0 : (straightX % step));
+
+                let arcSteps = Math.max(3, Math.ceil(arcLen / step));
+                for (let i = 0; i <= arcSteps; i++) {
+                    let a = -0.5 * Math.PI + (i / arcSteps) * (0.5 * Math.PI);
+                    if (i > 0) dist += arcLen / arcSteps;
+                    addPoint((x1 - r) + r * Math.cos(a), (y0 + r) + r * Math.sin(a), Math.cos(a), Math.sin(a));
+                }
+
+                for (let d = 0; d < straightY; d += step) {
+                    dist += (d === 0 ? 0 : step);
+                    addPoint(x1, y0 + r + d, 1, 0);
+                }
+                dist += (straightY % step === 0 ? 0 : (straightY % step));
+
+                for (let i = 0; i <= arcSteps; i++) {
+                    let a = (i / arcSteps) * (0.5 * Math.PI);
+                    if (i > 0) dist += arcLen / arcSteps;
+                    addPoint((x1 - r) + r * Math.cos(a), (y1 - r) + r * Math.sin(a), Math.cos(a), Math.sin(a));
+                }
+
+                for (let d = 0; d < straightX; d += step) {
+                    dist += (d === 0 ? 0 : step);
+                    addPoint(x1 - r - d, y1, 0, 1);
+                }
+                dist += (straightX % step === 0 ? 0 : (straightX % step));
+
+                for (let i = 0; i <= arcSteps; i++) {
+                    let a = 0.5 * Math.PI + (i / arcSteps) * (0.5 * Math.PI);
+                    if (i > 0) dist += arcLen / arcSteps;
+                    addPoint((x0 + r) + r * Math.cos(a), (y1 - r) + r * Math.sin(a), Math.cos(a), Math.sin(a));
+                }
+
+                for (let d = 0; d < straightY; d += step) {
+                    dist += (d === 0 ? 0 : step);
+                    addPoint(x0, y1 - r - d, -1, 0);
+                }
+                dist += (straightY % step === 0 ? 0 : (straightY % step));
+
+                for (let i = 0; i <= arcSteps; i++) {
+                    let a = Math.PI + (i / arcSteps) * (0.5 * Math.PI);
+                    if (i > 0) dist += arcLen / arcSteps;
+                    addPoint((x0 + r) + r * Math.cos(a), (y0 + r) + r * Math.sin(a), Math.cos(a), Math.sin(a));
+                }
+
+                ctx.closePath();
+
+                let rawCol = "#89b4fa";
+                if (typeof ThemeBackend !== "undefined") {
+                    if (ThemeBackend.primary) rawCol = ThemeBackend.primary;
+                    else if (ThemeBackend.blue) rawCol = ThemeBackend.blue;
+                }
+                let c = Qt.color(rawCol);
+
+                ctx.strokeStyle = c;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+    }
+
     MouseArea {
         id: widgetMenuArea
         anchors.fill: parent
@@ -186,7 +356,7 @@ PanelWindow {
         enabled: !root.isRedacting
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                DesktopMenuController.toggle(root.screen, root.animX + mouse.x, root.animY + mouse.y, "widget", root.wId);
+                DesktopMenuController.toggle(root.screen, (root.animX - root.auraMargin) + mouse.x, (root.animY - root.auraMargin) + mouse.y, "widget", root.wId);
             } else {
                 DesktopMenuController.hide();
             }

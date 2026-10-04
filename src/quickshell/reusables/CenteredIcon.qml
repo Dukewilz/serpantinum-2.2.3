@@ -1,4 +1,5 @@
 import QtQuick
+import "../"
 
 Item {
     id: root
@@ -8,7 +9,7 @@ Item {
     property bool opticalCentering: true
     implicitWidth: pixelSize + 8
     implicitHeight: pixelSize + 8
-    FontLoader { id: iconFont; source: "../../assets/fonts/IosevkaNerdFont-Regular.ttf" }
+    property string fontFamily: ThemeBackend.iconFont
     TextMetrics {
         id: ink
         text: glyph.text
@@ -19,7 +20,7 @@ Item {
         id: glyph
         text: root.text
         color: root.color
-        font.family: iconFont.status === FontLoader.Ready ? iconFont.name : "Iosevka Nerd Font"
+        font.family: root.fontFamily
         font.pixelSize: root.pixelSize
         textFormat: Text.PlainText
         renderType: Text.NativeRendering

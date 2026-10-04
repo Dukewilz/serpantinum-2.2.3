@@ -19,6 +19,7 @@ Scope {
 
     property string freezeTimestamp: ""
     property bool isUnlocking: false
+    property int resumeRevision: 0
 
     property bool isNiri: false
     property bool isSway: false
@@ -53,6 +54,11 @@ Scope {
         SystemInfo.fetch();
         root.updateDeInfo();
         root.updateScreenCount();
+        Quickshell.execDetached(["rm", "-f", Caching.getRunDir("lock") + "/locked"]);
+    }
+
+    Component.onDestruction: {
+        Quickshell.execDetached(["rm", "-f", Caching.getRunDir("lock") + "/locked"]);
     }
 
     Connections {
@@ -207,6 +213,7 @@ Scope {
         root.isUnlocking = false;
         kbWaiter.running = false;
         kbPoller.running = false;
+        Quickshell.execDetached(["rm", "-f", Caching.getRunDir("lock") + "/locked"]);
         if (root.freezeTimestamp !== "") {
             Quickshell.execDetached(["bash", "-c", "rm -f " + Caching.getRunDir("screenshot") + "/lock_freeze_*_" + root.freezeTimestamp + ".png"]);
             root.freezeTimestamp = "";
@@ -220,9 +227,8 @@ Scope {
         }
     }
 
-    Settings {
+    QtObject {
         id: lockSettings
-        category: "LockScreen"
         property bool hidePassword: false
         property int revealDuration: 300
     }
@@ -267,6 +273,7 @@ Scope {
             root.updateDeInfo();
             pamActionTimer.restart();
             kbPollerRestartTimer.restart();
+            root.resumeRevision++;
             if (rootLock.locked) {
                 pam.start();
             }
@@ -286,6 +293,14 @@ Scope {
     WlSessionLock {
         id: rootLock
         locked: false
+        onLockedChanged: {
+            let lockFile = Caching.getRunDir("lock") + "/locked";
+            if (locked) {
+                Quickshell.execDetached(["touch", lockFile]);
+            } else {
+                Quickshell.execDetached(["rm", "-f", lockFile]);
+            }
+        }
 
         surface: Component {
             WlSessionLockSurface {
@@ -510,6 +525,30 @@ Scope {
                                     if (event.text.length > 0 && event.key !== Qt.Key_Return && event.key !== Qt.Key_Enter && event.key !== Qt.Key_Tab && event.key !== Qt.Key_Backspace) {
                                         passwordInput.insertText(event.text);
                                     }
+                                    event.accepted = true;
+                                }
+                            } else {
+                                screenRoot.restoreFocus();
+                                if (event.key === Qt.Key_Escape) {
+                                    if (screenRoot.powerMenuOpen) {
+                                        screenRoot.powerMenuOpen = false;
+                                    } else {
+                                        screenRoot.inputActive = false;
+                                    }
+                                    passwordInput.clear();
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                    if (passwordInput.text.length > 0 && pam.responseRequired && !lockUI.authenticating) {
+                                        lockUI.authenticating = true;
+                                        lockUI.statusText = I18n.t("lock.status.authenticating");
+                                        lockUI.failed = false;
+                                        pam.respond(passwordInput.text);
+                                    }
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
+                                    event.accepted = true;
+                                } else if (event.text.length > 0 && event.key !== Qt.Key_Backspace) {
+                                    passwordInput.insertText(event.text);
                                     event.accepted = true;
                                 }
                             }
@@ -753,20 +792,29 @@ Scope {
                         target: rootLock
                         function onLockedChanged() {
                             if (rootLock.locked) {
-                                focusSyncTimer.restart();
                                 screenRoot.restoreFocus();
                             }
                         }
                     }
 
-                    Timer {
-                        id: focusSyncTimer
-                        interval: 50
-                        repeat: true
-                        running: rootLock.locked && !screenRoot.isUnlocking
-                        triggeredOnStart: true
-                        onTriggered: {
-                            screenRoot.restoreFocus();
+                    Connections {
+                        target: surface
+                        function onActiveChanged() {
+                            if (surface.active && rootLock.locked && !screenRoot.isUnlocking) {
+                                screenRoot.restoreFocus();
+                            }
+                        }
+                    }
+
+                    Connections {
+                        target: root
+                        function onResumeRevisionChanged() {
+                            if (rootLock.locked && !screenRoot.isUnlocking) {
+                                screenRoot.restoreFocus();
+                                if (typeof clockModule !== "undefined" && clockModule.updateClock) {
+                                    clockModule.updateClock();
+                                }
+                            }
                         }
                     }
 
@@ -798,7 +846,7 @@ Scope {
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             cache: true
-                            sourceSize: Qt.size(parent.width, parent.height)
+                            sourceSize: Qt.size(Math.ceil(parent.width * (Screen.devicePixelRatio || 1)), Math.ceil(parent.height * (Screen.devicePixelRatio || 1)))
                             onStatusChanged: {
                                 if (status === Image.Error) {
                                     let defaultPath = "file://" + Caching.getCacheDir("wallpaper") + "/current_wallpaper.png";
@@ -816,7 +864,7 @@ Scope {
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: false
                             cache: true
-                            sourceSize: Qt.size(parent.width, parent.height)
+                            sourceSize: Qt.size(Math.ceil(parent.width * (Screen.devicePixelRatio || 1)), Math.ceil(parent.height * (Screen.devicePixelRatio || 1)))
                             opacity: (status === Image.Ready && source.toString() !== "") ? 1.0 : 0.0
 
                             onStatusChanged: {
@@ -845,7 +893,7 @@ Scope {
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             cache: true
-                            sourceSize: Qt.size(parent.width, parent.height)
+                            sourceSize: Qt.size(Math.ceil(parent.width * (Screen.devicePixelRatio || 1)), Math.ceil(parent.height * (Screen.devicePixelRatio || 1)))
 
                             onStatusChanged: {
                                 if (status === Image.Error) {
@@ -864,7 +912,7 @@ Scope {
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: false
                             cache: true
-                            sourceSize: Qt.size(parent.width, parent.height)
+                            sourceSize: Qt.size(Math.ceil(parent.width * (Screen.devicePixelRatio || 1)), Math.ceil(parent.height * (Screen.devicePixelRatio || 1)))
                             opacity: (screenRoot.inputActive && status === Image.Ready && source.toString() !== "") ? 1.0 : 0.0
 
                             Behavior on opacity {
@@ -1007,7 +1055,6 @@ Scope {
 
                         MouseArea {
                             anchors.fill: parent
-                            hoverEnabled: true
                             preventStealing: true
                             enabled: !screenRoot.isPlayingIntro && !screenRoot.isUnlocking
                             onPressed: {
@@ -1037,6 +1084,20 @@ Scope {
                                 scale: (screenRoot.inputActive || screenRoot.centerReveal > 0.02) ? 0.92 : 1.0
                                 visible: opacity > 0.01
 
+                                property var currentTime: new Date()
+                                property string timeFormat: {
+                                    if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.time && Config.rawSettings.bar.time.format !== undefined) {
+                                        return Config.rawSettings.bar.time.format;
+                                    }
+                                    return "HH:mm:ss";
+                                }
+                                readonly property bool is12h: timeFormat.includes("h") || timeFormat.toLowerCase().includes("ap")
+                                readonly property string hourFmt: is12h ? (timeFormat.includes("hh") ? "hh" : "h") : (timeFormat.includes("H") && !timeFormat.includes("HH") ? "H" : "HH")
+
+                                Component.onCompleted: {
+                                    updateClock();
+                                }
+
                                 Behavior on anchors.verticalCenterOffset { NumberAnimation { duration: 320; easing.type: Easing.OutCubic } }
                                 Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                                 Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
@@ -1047,6 +1108,7 @@ Scope {
 
                                     Text {
                                         id: clockHours
+                                        text: Qt.formatDateTime(clockModule.currentTime, clockModule.hourFmt)
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: screenRoot.s(120)
                                         font.weight: Font.Normal
@@ -1072,17 +1134,8 @@ Scope {
                                         font.pixelSize: screenRoot.s(80)
                                         font.weight: Font.Light
                                         Layout.alignment: Qt.AlignVCenter
-                                        opacity: colonPulse.running ? colonOpacity : 0.6
+                                        opacity: 0.75
                                         color: "#ffffff"
-
-                                        property real colonOpacity: 0.6
-                                        SequentialAnimation on colonOpacity {
-                                            id: colonPulse
-                                            running: !screenRoot.isPlayingIntro && !screenRoot.isUnlocking
-                                            loops: Animation.Infinite
-                                            NumberAnimation { to: 1.0; duration: 500; easing.type: Easing.OutCubic }
-                                            NumberAnimation { to: 0.35; duration: 500; easing.type: Easing.InCubic }
-                                        }
 
                                         Text {
                                             anchors.fill: parent
@@ -1099,6 +1152,7 @@ Scope {
 
                                     Text {
                                         id: clockMinutes
+                                        text: Qt.formatDateTime(clockModule.currentTime, "mm")
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: screenRoot.s(120)
                                         font.weight: Font.Normal
@@ -1119,6 +1173,7 @@ Scope {
 
                                     Text {
                                         id: clockAmPm
+                                        text: clockModule.is12h ? Qt.formatDateTime(clockModule.currentTime, "AP") : ""
                                         visible: text !== ""
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: screenRoot.s(28)
@@ -1144,6 +1199,7 @@ Scope {
 
                                 Text {
                                     id: dateText
+                                    text: Qt.formatDateTime(clockModule.currentTime, "dddd, d MMMM").toUpperCase()
                                     Layout.alignment: Qt.AlignHCenter
                                     font.family: ThemeBackend.fontFamily
                                     font.pixelSize: screenRoot.s(14)
@@ -1166,18 +1222,21 @@ Scope {
                                     }
                                 }
 
+                                function updateClock() {
+                                    clockModule.currentTime = new Date();
+                                    let sec = clockModule.currentTime.getSeconds();
+                                    let ms = clockModule.currentTime.getMilliseconds();
+                                    let msToNextMinute = ((60 - sec) * 1000) - ms;
+                                    clockTimer.interval = Math.max(500, msToNextMinute);
+                                }
+
                                 Timer {
                                     id: clockTimer
-                                    interval: 1000; running: true; repeat: true; triggeredOnStart: true
+                                    interval: 1000
+                                    running: rootLock.locked && !screenRoot.isUnlocking
+                                    repeat: true
                                     onTriggered: {
-                                        let d = new Date();
-                                        let fmt = (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.time && Config.rawSettings.bar.time.format !== undefined) ? Config.rawSettings.bar.time.format : "HH:mm:ss";
-                                        let is12h = fmt.includes("h") || fmt.toLowerCase().includes("ap");
-                                        let hourFmt = is12h ? (fmt.includes("hh") ? "hh" : "h") : (fmt.includes("H") && !fmt.includes("HH") ? "H" : "HH");
-                                        clockHours.text = Qt.formatDateTime(d, hourFmt);
-                                        clockMinutes.text = Qt.formatDateTime(d, "mm");
-                                        clockAmPm.text = is12h ? Qt.formatDateTime(d, "AP") : "";
-                                        dateText.text = Qt.formatDateTime(d, "dddd, d MMMM").toUpperCase();
+                                        clockModule.updateClock();
                                     }
                                 }
                             }
@@ -1350,6 +1409,12 @@ Scope {
                                                 isWidgetVisible: rootLock.locked && screenRoot.inputActive
                                                 isRevealed: !lockSettings.hidePassword
 
+                                                onActiveFocusChanged: {
+                                                    if (!activeFocus && rootLock.locked && !screenRoot.isUnlocking && screenRoot.inputActive) {
+                                                        Qt.callLater(screenRoot.restoreFocus);
+                                                    }
+                                                }
+
                                                 onAccepted: (finalText) => {
                                                     if (finalText.length > 0 && pam.responseRequired && !lockUI.authenticating) {
                                                         lockUI.authenticating = true;
@@ -1383,6 +1448,9 @@ Scope {
                                                         passwordInput.clear();
                                                         screenRoot.restoreFocus();
                                                         event.accepted = true;
+                                                    } else if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
+                                                        event.accepted = true;
+                                                        screenRoot.restoreFocus();
                                                     }
                                                 }
                                             }
@@ -2158,7 +2226,7 @@ Scope {
 
                                                 SequentialAnimation {
                                                     loops: Animation.Infinite
-                                                    running: lockMediaTitleText.implicitWidth > lockMediaTitleClip.width
+                                                    running: screenRoot.wingsReveal > 0.98 && screenRoot.isMediaActive && MprisController.isPlaying && (lockMediaTitleText.implicitWidth > lockMediaTitleClip.width)
 
                                                     PauseAnimation { duration: 3000 }
                                                     NumberAnimation {

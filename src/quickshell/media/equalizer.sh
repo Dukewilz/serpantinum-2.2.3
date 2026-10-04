@@ -19,35 +19,36 @@ ensure_easyeffects() {
         return 0
     fi
 
-    # systemd user service
     if command -v systemctl >/dev/null 2>&1 &&
        systemctl --user cat ee-eq.service >/dev/null 2>&1; then
         systemctl --user start ee-eq.service >/dev/null 2>&1
+        sleep 0.5
         return 0
     fi
 
-    # OpenRC service
     if command -v rc-service >/dev/null 2>&1 &&
        rc-service easyeffects status >/dev/null 2>&1; then
         rc-service easyeffects start >/dev/null 2>&1
+        sleep 0.5
         return 0
     fi
 
-    # runit service
     if command -v sv >/dev/null 2>&1 &&
        [ -d /var/service/easyeffects ]; then
         sv up /var/service/easyeffects >/dev/null 2>&1
+        sleep 0.5
         return 0
     fi
 
-    # s6 service
     if command -v s6-svc >/dev/null 2>&1 &&
        [ -d /run/service/easyeffects ]; then
         s6-svc -u /run/service/easyeffects >/dev/null 2>&1
+        sleep 0.5
         return 0
     fi
 
     easyeffects -w -l "$PRESET_NAME" >/dev/null 2>&1 &
+    sleep 0.5
 }
 
 apply_eq() {
@@ -141,6 +142,7 @@ except Exception:
     rm -f "$PRESET_FILE.tmp.$$"
 
     ensure_easyeffects
+    easyeffects -l "$PRESET_NAME" >/dev/null 2>&1 &
 }
 
 save_preset() {

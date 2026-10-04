@@ -11,6 +11,8 @@ Item {
         return (typeof Scaler !== "undefined") ? Scaler.s(val) : val;
     }
 
+    property bool animate: false
+
     property real sideMargin: root.s(4)
     property real baseActiveFont: root.s(16)
     property real lineHeight: Math.max(root.s(24), baseActiveFont * 1.4)
@@ -49,12 +51,16 @@ Item {
     Connections {
         target: Lyrics
         function onLyricsChanged() {
+            root.animate = false;
             root.activeItemCenterY = 0;
         }
         function onCurrentIndexChanged() {
+            if (root.activeItemCenterY > 0) {
+                root.animate = true;
+            }
             if (Lyrics.currentIndex >= 0 && lyricsRepeater && lyricsRepeater.count > Lyrics.currentIndex) {
                 let it = lyricsRepeater.itemAt(Lyrics.currentIndex);
-                if (it) {
+                if (it && (Lyrics.currentIndex === 0 || it.y > 0)) {
                     root.activeItemCenterY = it.y + it.height / 2;
                 }
             }
@@ -69,7 +75,7 @@ Item {
             }
             if (lyricsRepeater && lyricsRepeater.count > Lyrics.currentIndex) {
                 let it = lyricsRepeater.itemAt(Lyrics.currentIndex);
-                if (it) {
+                if (it && (Lyrics.currentIndex === 0 || it.y > 0)) {
                     return center - (it.y + it.height / 2);
                 }
             }
@@ -85,9 +91,15 @@ Item {
         y: root.targetY
 
         Behavior on y {
+            enabled: root.animate
             NumberAnimation {
                 duration: 650
                 easing.type: Easing.OutCubic
+                onRunningChanged: {
+                    if (!running) {
+                        root.animate = false;
+                    }
+                }
             }
         }
 
@@ -123,25 +135,25 @@ Item {
                     }
 
                     Component.onCompleted: {
-                        if (isCurrent) {
+                        if (isCurrent && (index === 0 || y > 0)) {
                             root.activeItemCenterY = y + height / 2;
                         }
                     }
 
                     onIsCurrentChanged: {
-                        if (isCurrent) {
+                        if (isCurrent && (index === 0 || y > 0)) {
                             root.activeItemCenterY = y + height / 2;
                         }
                     }
 
                     onYChanged: {
-                        if (isCurrent) {
+                        if (isCurrent && (index === 0 || y > 0)) {
                             root.activeItemCenterY = y + height / 2;
                         }
                     }
 
                     onHeightChanged: {
-                        if (isCurrent) {
+                        if (isCurrent && (index === 0 || y > 0)) {
                             root.activeItemCenterY = y + height / 2;
                         }
                     }

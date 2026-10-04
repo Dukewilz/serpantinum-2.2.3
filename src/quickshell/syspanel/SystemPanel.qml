@@ -93,6 +93,22 @@ Item {
     property bool wifiRadioEnabled: Networking.wifiEnabled
     property bool btRadioEnabled: Boolean(Bluetooth.defaultAdapter && Bluetooth.defaultAdapter.enabled)
 
+    Connections {
+        target: Bluetooth
+        ignoreUnknownSignals: true
+        function onDefaultAdapterChanged() {
+            root.btRadioEnabled = Boolean(Bluetooth.defaultAdapter && Bluetooth.defaultAdapter.enabled);
+        }
+    }
+
+    Connections {
+        target: Bluetooth.defaultAdapter || null
+        ignoreUnknownSignals: true
+        function onEnabledChanged() {
+            root.btRadioEnabled = Boolean(Bluetooth.defaultAdapter && Bluetooth.defaultAdapter.enabled);
+        }
+    }
+
     property bool isDraggingVol: false
     property bool isDraggingBri: false
     property bool usesDdcBrightness: false
@@ -328,7 +344,7 @@ Item {
             spacing: root.s(16)
 
             Text {
-                font.family: "Iosevka Nerd Font"
+                font.family: ThemeBackend.iconFont
                 font.pixelSize: root.s(32)
                 color: bRoot.iconColor
                 text: root.isCharging ? "󰂄" : (root.batCapacity > 20 ? "󰁹" : "󰂃")
@@ -413,6 +429,7 @@ Item {
 
         CenteredIcon {
             anchors.fill: parent
+            fontFamily: qaBtn.customFontFamily !== "" ? qaBtn.customFontFamily : ThemeBackend.iconFont
             pixelSize: qaBtn.customFontSize > 0 ? qaBtn.customFontSize : root.s(22)
             color: qaBtn.isActive ? (ThemeBackend.uiContentOpacity >= 0.75 ? ThemeBackend.crust : ThemeBackend.text) : (qaMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
             text: qaBtn.iconText
@@ -511,7 +528,7 @@ Item {
 
                                 anchors.centerIn: parent
                                 text: ""
-                                font.family: "Iosevka Nerd Font"
+                                font.family: ThemeBackend.iconFont
                                 font.pixelSize: root.s(18)
                                 color: ThemeBackend.text
                                 visible: SystemInfo.avatarPath === ""
@@ -609,7 +626,6 @@ Item {
                             IconButton {
                                 Layout.alignment: Qt.AlignVCenter
                                 size: root.s(26)
-                                iconOffsetX: -1
                                 cornerRadius: root.s(8)
                                 buttonIcon: root.sysMuted || root.sysVolume === 0 ? "󰖁" : (root.sysVolume > 50 ? "󰕾" : "󰖀")
                                 iconFontSize: root.s(15)
@@ -700,7 +716,6 @@ Item {
                                 Layout.alignment: Qt.AlignVCenter
                                 size: root.s(26)
                                 cornerRadius: root.s(8)
-                                iconOffsetX: -3
                                 buttonIcon: root.sysBrightness > 66 ? "󰃠" : (root.sysBrightness > 33 ? "󰃟" : "󰃞")
                                 iconFontSize: root.s(15)
                                 accentColor: ThemeBackend.surface1
@@ -1305,8 +1320,8 @@ Item {
         }
 
                                 anchors.centerIn: parent
-                                font.family: "Iosevka Nerd Font"
-                                font.pixelSize: root.s(24)
+                                font.family: ThemeBackend.iconFont
+                                font.pixelSize: root.s(19)
                                 color: isDisabled ? ThemeBackend.surface2 : (actionMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                 text: icon
                                 Behavior on color {
@@ -1323,8 +1338,8 @@ Item {
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     y: (actionCapsule.height / 2) - (height / 2) - (actionCapsule.height - parent.height)
-                                    font.family: "Iosevka Nerd Font"
-                                    font.pixelSize: root.s(24)
+                                    font.family: ThemeBackend.iconFont
+                                    font.pixelSize: root.s(19)
                                     color: ThemeBackend.crust
                                     text: icon
                                 }

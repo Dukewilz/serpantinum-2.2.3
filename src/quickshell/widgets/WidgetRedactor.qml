@@ -630,11 +630,11 @@ Scope {
                             defH = snapped.h;
                         }
 
-                        let defVar = WidgetRegistry.defaultVariant(typeKey);
+                        let defVariant = WidgetRegistry.defaultVariant(typeKey);
 
                         activeWidgetsModel.append({
                             "wType": typeKey,
-                            "wVariant": defVar,
+                            "wVariant": defVariant,
                             "wX": spawnX,
                             "wY": spawnY,
                             "wWidth": defW,
@@ -648,7 +648,7 @@ Scope {
                         redactorMode.topZ += 1;
                         redactorMode.selectedId = newId;
                         root.targetSelectedWidgetId = newId;
-                        WidgetSync.addWidget(redactorWindow.safeMonitorName, newId, typeKey, spawnX, spawnY, defW, defH, 1.0, "", 0, defVar);
+                        WidgetSync.addWidget(redactorWindow.safeMonitorName, newId, typeKey, spawnX, spawnY, defW, defH, 1.0, "", 0, defVariant);
                         WidgetSync.bringToFront(redactorWindow.safeMonitorName, newId);
                         redactorMode.updateToolbarObscured();
                     }
@@ -836,7 +836,7 @@ Scope {
                                     WidgetSync.bringToFront(redactorWindow.safeMonitorName, String(widgetProxy.wId));
                                 }
 
-                                property real selectionGap: s(20)
+                                property real selectionGap: s(8)
 
                                 property alias preview: preview
                                 property string wType: model.wType || ""
@@ -1265,34 +1265,153 @@ Scope {
                                         property bool isAspectLocked: preview.item && preview.item.minAspect !== undefined && preview.item.maxAspect !== undefined && preview.item.minAspect === preview.item.maxAspect && preview.item.minAspect > 0
                                         readonly property bool isRotated90: Math.abs(Math.round(widgetProxy.wRotation || 0)) % 180 !== 0
 
-                                        Rectangle {
-                                            id: selectionBox
+                                        Canvas {
+                                            id: auraCanvas
                                             anchors.fill: parent
-                                            color: "transparent"
-                                            border.width: s(2)
-                                            border.color: ThemeBackend.mauve
-                                            radius: 0
-                                        }
+                                            antialiasing: true
 
-                                        Item {
-                                            id: cornerBrackets
-                                            anchors.fill: parent
+                                            property real phase: 0.0
 
-                                            property real cornerSize: s(16)
-                                            property real lineWidth: s(2)
-                                            property color cornerColor: ThemeBackend.mauve
+                                            NumberAnimation on phase {
+                                                running: widgetProxy.isSelected && selectionUI.opacity > 0.001
+                                                from: 0.0
+                                                to: Math.PI * 2
+                                                duration: 3200
+                                                loops: Animation.Infinite
+                                            }
 
-                                            Rectangle { x: 0; y: 0; width: cornerBrackets.cornerSize; height: cornerBrackets.lineWidth; color: cornerBrackets.cornerColor; radius: 0 }
-                                            Rectangle { x: 0; y: 0; width: cornerBrackets.lineWidth; height: cornerBrackets.cornerSize; color: cornerBrackets.cornerColor; radius: 0 }
+                                            onPhaseChanged: {
+                                                if (selectionUI.opacity > 0.001) requestPaint();
+                                            }
 
-                                            Rectangle { x: parent.width - cornerBrackets.cornerSize; y: 0; width: cornerBrackets.cornerSize; height: cornerBrackets.lineWidth; color: cornerBrackets.cornerColor; radius: 0 }
-                                            Rectangle { x: parent.width - cornerBrackets.lineWidth; y: 0; width: cornerBrackets.lineWidth; height: cornerBrackets.cornerSize; color: cornerBrackets.cornerColor; radius: 0 }
+                                            onWidthChanged: requestPaint()
+                                            onHeightChanged: requestPaint()
 
-                                            Rectangle { x: 0; y: parent.height - cornerBrackets.lineWidth; width: cornerBrackets.cornerSize; height: cornerBrackets.lineWidth; color: cornerBrackets.cornerColor; radius: 0 }
-                                            Rectangle { x: 0; y: parent.height - cornerBrackets.cornerSize; width: cornerBrackets.lineWidth; height: cornerBrackets.cornerSize; color: cornerBrackets.cornerColor; radius: 0 }
+                                            Connections {
+                                                target: widgetProxy
+                                                function onIsSelectedChanged() {
+                                                    auraCanvas.requestPaint();
+                                                }
+                                            }
 
-                                            Rectangle { x: parent.width - cornerBrackets.cornerSize; y: parent.height - cornerBrackets.lineWidth; width: cornerBrackets.cornerSize; height: cornerBrackets.lineWidth; color: cornerBrackets.cornerColor; radius: 0 }
-                                            Rectangle { x: parent.width - cornerBrackets.lineWidth; y: parent.height - cornerBrackets.cornerSize; width: cornerBrackets.lineWidth; height: cornerBrackets.cornerSize; color: cornerBrackets.cornerColor; radius: 0 }
+                                            Connections {
+                                                target: selectionUI
+                                                function onOpacityChanged() {
+                                                    if (selectionUI.opacity > 0.001) auraCanvas.requestPaint();
+                                                }
+                                            }
+
+                                            onPaint: {
+                                                let ctx = getContext("2d");
+                                                ctx.clearRect(0, 0, width, height);
+                                                if (selectionUI.opacity <= 0.001) return;
+
+                                                let w = width;
+                                                let h = height;
+                                                if (w <= 0 || h <= 0) return;
+
+                                                let baseR = 12;
+                                                if (typeof ThemeBackend !== "undefined" && ThemeBackend.borderRadius !== undefined && ThemeBackend.borderRadius !== null) {
+                                                    baseR = ThemeBackend.borderRadius;
+                                                }
+                                                let strokePad = 2.5;
+                                                let r = Math.max(2, Math.min(baseR + 4, (w - 2 * strokePad) / 2, (h - 2 * strokePad) / 2));
+
+                                                let x0 = strokePad;
+                                                let y0 = strokePad;
+                                                let x1 = w - strokePad;
+                                                let y1 = h - strokePad;
+
+                                                let straightX = (x1 - r) - (x0 + r);
+                                                let straightY = (y1 - r) - (y0 + r);
+                                                let arcLen = 0.5 * Math.PI * r;
+                                                let totalP = 2 * (straightX + straightY) + 4 * arcLen;
+                                                if (totalP <= 0) return;
+
+                                                let cycles = Math.max(4, Math.round(totalP / 28));
+                                                let freq = (2 * Math.PI * cycles) / totalP;
+                                                let amp = 0.9;
+                                                let step = 4.0;
+                                                let ph = auraCanvas.phase;
+
+                                                let dist = 0;
+                                                ctx.beginPath();
+                                                let started = false;
+
+                                                function addPoint(x, y, nx, ny) {
+                                                    let wOff = amp * Math.sin(freq * dist + ph);
+                                                    let px = x + wOff * nx;
+                                                    let py = y + wOff * ny;
+                                                    if (!started) {
+                                                        ctx.moveTo(px, py);
+                                                        started = true;
+                                                    } else {
+                                                        ctx.lineTo(px, py);
+                                                    }
+                                                }
+
+                                                for (let d = 0; d < straightX; d += step) {
+                                                    dist += (d === 0 ? 0 : step);
+                                                    addPoint(x0 + r + d, y0, 0, -1);
+                                                }
+                                                dist += (straightX % step === 0 ? 0 : (straightX % step));
+
+                                                let arcSteps = Math.max(3, Math.ceil(arcLen / step));
+                                                for (let i = 0; i <= arcSteps; i++) {
+                                                    let a = -0.5 * Math.PI + (i / arcSteps) * (0.5 * Math.PI);
+                                                    if (i > 0) dist += arcLen / arcSteps;
+                                                    addPoint((x1 - r) + r * Math.cos(a), (y0 + r) + r * Math.sin(a), Math.cos(a), Math.sin(a));
+                                                }
+
+                                                for (let d = 0; d < straightY; d += step) {
+                                                    dist += (d === 0 ? 0 : step);
+                                                    addPoint(x1, y0 + r + d, 1, 0);
+                                                }
+                                                dist += (straightY % step === 0 ? 0 : (straightY % step));
+
+                                                for (let i = 0; i <= arcSteps; i++) {
+                                                    let a = (i / arcSteps) * (0.5 * Math.PI);
+                                                    if (i > 0) dist += arcLen / arcSteps;
+                                                    addPoint((x1 - r) + r * Math.cos(a), (y1 - r) + r * Math.sin(a), Math.cos(a), Math.sin(a));
+                                                }
+
+                                                for (let d = 0; d < straightX; d += step) {
+                                                    dist += (d === 0 ? 0 : step);
+                                                    addPoint(x1 - r - d, y1, 0, 1);
+                                                }
+                                                dist += (straightX % step === 0 ? 0 : (straightX % step));
+
+                                                for (let i = 0; i <= arcSteps; i++) {
+                                                    let a = 0.5 * Math.PI + (i / arcSteps) * (0.5 * Math.PI);
+                                                    if (i > 0) dist += arcLen / arcSteps;
+                                                    addPoint((x0 + r) + r * Math.cos(a), (y1 - r) + r * Math.sin(a), Math.cos(a), Math.sin(a));
+                                                }
+
+                                                for (let d = 0; d < straightY; d += step) {
+                                                    dist += (d === 0 ? 0 : step);
+                                                    addPoint(x0, y1 - r - d, -1, 0);
+                                                }
+                                                dist += (straightY % step === 0 ? 0 : (straightY % step));
+
+                                                for (let i = 0; i <= arcSteps; i++) {
+                                                    let a = Math.PI + (i / arcSteps) * (0.5 * Math.PI);
+                                                    if (i > 0) dist += arcLen / arcSteps;
+                                                    addPoint((x0 + r) + r * Math.cos(a), (y0 + r) + r * Math.sin(a), Math.cos(a), Math.sin(a));
+                                                }
+
+                                                ctx.closePath();
+
+                                                let rawCol = "#89b4fa";
+                                                if (typeof ThemeBackend !== "undefined") {
+                                                    if (ThemeBackend.primary) rawCol = ThemeBackend.primary;
+                                                    else if (ThemeBackend.blue) rawCol = ThemeBackend.blue;
+                                                }
+                                                let c = Qt.color(rawCol);
+
+                                                ctx.strokeStyle = c;
+                                                ctx.lineWidth = 2;
+                                                ctx.stroke();
+                                            }
                                         }
 
                                         MouseArea {
@@ -2254,7 +2373,7 @@ Scope {
                                     size: s(40)
                                     cornerRadius: ThemeBackend.borderRadius
                                     buttonIcon: "󰕰"
-                                    iconOffsetX: -2
+                                    iconOffsetX: 0
                                     iconFontSize: s(20)
                                     accentColor: redactorMode.gridEnabled ? ThemeBackend.mauve : ThemeBackend.surface0
                                     textColor: redactorMode.gridEnabled ? ThemeBackend.crust : ThemeBackend.text

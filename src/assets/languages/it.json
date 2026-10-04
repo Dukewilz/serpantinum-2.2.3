@@ -148,23 +148,24 @@
       },
       "dim": {
         "title": "Oscura schermo",
-        "desc": "Tempo prima di ridurre la luminosità dello schermo"
+        "desc": "Riduci la luminosità dello schermo prima del blocco"
       },
       "dpms": {
         "title": "Spegnimento schermo (DPMS)",
-        "desc": "Tempo prima che lo schermo si spenga completamente"
+        "desc": "Spegni il segnale dello schermo del monitor"
       },
       "lock": {
         "title": "Blocca sessione",
-        "desc": "Tempo prima di richiedere la password"
+        "desc": "Blocca la sessione dopo un periodo di inattività"
       },
       "suspend": {
         "title": "Sospensione sistema",
-        "desc": "Tempo prima di sospendere il dispositivo"
+        "desc": "Sospendi il sistema in modalità sospensione"
       },
       "hooks": {
         "title": "Azioni automatiche (comandi shell)"
-      }
+      },
+      "custom_action_desc": "Azione e comando personalizzati per timeout"
     },
     "welcome": {
       "by_author": "fatto da @{author}",
@@ -383,6 +384,71 @@
         "style": {
           "title": "Stile",
           "desc": "Scegli lo stile visivo per l'orologio e la data"
+        }
+      },
+      "vis": {
+        "bars": {
+          "title": "Numero di barre",
+          "desc": "Numero di barre di frequenza da visualizzare"
+        },
+        "alignment": {
+          "title": "Allineamento",
+          "desc": "Centra il visualizzatore o allinealo in alto o in basso"
+        },
+        "align": {
+          "center": "Al centro",
+          "top": "In alto",
+          "bottom": "In basso",
+          "left": "A sinistra",
+          "right": "A destra"
+        },
+        "continuous": {
+          "title": "Onda continua",
+          "desc": "Mostra un onda fluida invece di barre discrete"
+        }
+      },
+      "sysmon": {
+        "style": {
+          "title": "Stile del cerchio",
+          "desc": "Aspetto visivo degli anelli di avanzamento",
+          "wave": "Onda",
+          "circle": "Cerchio"
+        },
+        "cpu": {
+          "title": "Uso CPU",
+          "desc": "Mostra l'anello di utilizzo del processore"
+        },
+        "ram": {
+          "title": "Uso memoria",
+          "desc": "Mostra l'anello di utilizzo della RAM"
+        },
+        "temp": {
+          "title": "Temperatura",
+          "desc": "Mostra l'anello della temperatura di sistema"
+        },
+        "disk": {
+          "title": "Uso disco",
+          "desc": "Mostra l'anello di utilizzo dello spazio disco"
+        }
+      },
+      "bat": {
+        "show_percent": {
+          "title": "Mostra percentuale",
+          "desc": "Mostra la percentuale numerica di carica della batteria"
+        },
+        "show_icon": {
+          "title": "Mostra icona",
+          "desc": "Mostra l'icona della batteria o l'indicatore grafico"
+        },
+        "style": {
+          "title": "Stile batteria",
+          "desc": "Scegli l'aspetto visivo dell'indicatore della batteria",
+          "name": {
+            "classic": "Classico",
+            "minimal": "Minimale"
+          },
+          "classic": "Pillola con onda a gradiente",
+          "minimal": "Capsula in stile iOS/Android con cappuccio"
         }
       }
     },
@@ -695,7 +761,9 @@
     "placeholder": "Inizia con > per un comando...",
     "tab_applications": "Applicazioni",
     "tab_files": "File",
-    "placeholder_files": "Cerca file o inserisci percorso..."
+    "placeholder_files": "Cerca file o inserisci percorso...",
+    "tab_emojis": "Emoji",
+    "placeholder_emojis": "Cerca emoji o inserisci parola chiave..."
   },
   "calendar": {
     "loading": "Caricamento...",

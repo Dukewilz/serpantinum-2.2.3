@@ -166,7 +166,8 @@ Item {
         return lp.endsWith(".mp4") || lp.endsWith(".mkv") || lp.endsWith(".mov") || lp.endsWith(".webm") || lp.indexOf("000_") !== -1;
     }
 
-    property real tileWidth: (typeof themesGrid !== "undefined" && themesGrid && themesGrid.width > 0) ? Math.max(0, (themesGrid.width - rootObj.s(20)) / 3) : ((typeof themesSectionCol !== "undefined" && themesSectionCol && themesSectionCol.width > 0) ? Math.max(0, (themesSectionCol.width - rootObj.s(44)) / 3) : Math.max(0, (themeTabRoot.width - rootObj.s(72)) / 3))
+    property real gridAvailableWidth: Math.max(0, settingsCol.width - rootObj.s(24))
+    property real tileWidth: Math.max(rootObj.s(80), (gridAvailableWidth - 2 * rootObj.s(10)) / 3)
 
     Timer {
         id: borderRadiusDebounceTimer
@@ -372,6 +373,7 @@ Item {
     onVisibleChanged: {
         if (visible) {
             activateTab();
+            Qt.callLater(function() { themesGrid.forceLayout(); });
         } else {
             if (fontDropdown.isOpen) fontDropdown.closePopup();
             if (wpDirDropdown.isOpen) wpDirDropdown.closePopup();
@@ -608,15 +610,19 @@ Item {
         id: presetDelegateComp
         Loader {
             id: delegateLoader
-            asynchronous: true
-            Layout.columnSpan: modelData.isDivider === true ? 3 : 1
-            Layout.fillWidth: modelData.isDivider === true
-            Layout.preferredWidth: modelData.isDivider === true ? -1 : themeTabRoot.tileWidth
-            Layout.maximumWidth: modelData.isDivider === true ? -1 : themeTabRoot.tileWidth
-            Layout.preferredHeight: modelData.isDivider === true ? rootObj.s(17) : rootObj.s(44)
-            sourceComponent: modelData.isDivider === true ? dividerComp : tileComp
             property var themeData: modelData
             property int itemIndex: index
+            readonly property bool isDiv: modelData.isDivider === true
+
+            asynchronous: false
+            sourceComponent: isDiv ? dividerComp : tileComp
+
+            Layout.columnSpan: isDiv ? 3 : 1
+            Layout.fillWidth: true
+            Layout.preferredWidth: isDiv ? themeTabRoot.gridAvailableWidth : themeTabRoot.tileWidth
+            Layout.minimumWidth: isDiv ? 0 : themeTabRoot.tileWidth
+            Layout.preferredHeight: isDiv ? rootObj.s(17) : rootObj.s(44)
+            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
         }
     }
 

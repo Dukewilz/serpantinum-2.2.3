@@ -52,6 +52,10 @@ ShellRoot {
     }
 
     Component.onCompleted: {
+        Qt.application.organization = "serpantinum";
+        Qt.application.domain = "serpantinum.org";
+        Qt.application.name = "serpantinum";
         FirstLaunch.checkFirstLaunch();
+        SysNotif.checkBattery();
     }
 }

@@ -146,23 +146,24 @@
       },
       "dim": {
         "title": "Ekranı tutqunlaşdır",
-        "desc": "Ekran tutqunlaşana qədər keçən vaxt"
+        "desc": "Kilidləmədən əvvəl ekran parlaqlığını azaltmaq"
       },
       "dpms": {
         "title": "Ekranı söndür (DPMS)",
-        "desc": "Ekran tam sönənə qədər keçən vaxt"
+        "desc": "Monitorun ekran siqnalını söndürmək"
       },
       "lock": {
         "title": "Seansı kilidlə",
-        "desc": "Şifrə tələb olunana qədər keçən vaxt"
+        "desc": "Hərəkətsizlik müddətindən sonra sessiyanı kilidləmək"
       },
       "suspend": {
         "title": "Sistemi yuxu rejiminə keçir",
-        "desc": "Cihaz yuxu rejiminə keçənə qədər keçən vaxt"
+        "desc": "Sistemi yuxu rejiminə keçirmək"
       },
       "hooks": {
         "title": "Hadisə əmrləri (qabıq əmrləri)"
-      }
+      },
+      "custom_action_desc": "Xüsusi vaxt aşımı fəaliyyəti və əmri"
     },
     "welcome": {
       "by_author": "Müəllif: @{author}",
@@ -382,6 +383,71 @@
         "style": {
           "title": "Stil",
           "desc": "Saat və tarix ekranının vizual stilini seçin"
+        }
+      },
+      "vis": {
+        "bars": {
+          "title": "Zolaqların sayı",
+          "desc": "Göstəriləcək tezlik zolaqlarının sayı"
+        },
+        "alignment": {
+          "title": "Düzləndirmə",
+          "desc": "Vizualizatoru mərkəzə, yuxarı və ya aşağı düzləndirin"
+        },
+        "align": {
+          "center": "Mərkəz",
+          "top": "Yuxarı",
+          "bottom": "Aşağı",
+          "left": "Sol",
+          "right": "Sağ"
+        },
+        "continuous": {
+          "title": "Davamlı dalğa",
+          "desc": "Ayrı-ayrı zolaqlar əvəzinə hamar dalğa göstərin"
+        }
+      },
+      "sysmon": {
+        "style": {
+          "title": "Dairə tərzi",
+          "desc": "Gedişat dairələrinin görünüşü",
+          "wave": "Dalğa",
+          "circle": "Dairə"
+        },
+        "cpu": {
+          "title": "CPU istifadəsi",
+          "desc": "Prosessor istifadəsi halqasını göstər"
+        },
+        "ram": {
+          "title": "Yaddaş istifadəsi",
+          "desc": "Operativ yaddaş (RAM) halqasını göstər"
+        },
+        "temp": {
+          "title": "Temperatur",
+          "desc": "Sistem temperaturu halqasını göstər"
+        },
+        "disk": {
+          "title": "Disk istifadəsi",
+          "desc": "Yaddaş diski istifadəsi halqasını göstər"
+        }
+      },
+      "bat": {
+        "show_percent": {
+          "title": "Faizi göstər",
+          "desc": "Batareya enerjisinin faizini rəqəmlə göstər"
+        },
+        "show_icon": {
+          "title": "İkonu göstər",
+          "desc": "Batareya ikonunu və ya qrafik göstəricini göstər"
+        },
+        "style": {
+          "title": "Batareya tərzi",
+          "desc": "Batareya göstəricisinin vizual görünüşünü seçin",
+          "name": {
+            "classic": "Klassik",
+            "minimal": "Minimal"
+          },
+          "classic": "Qradiyent dalğalı kapsul",
+          "minimal": "iOS/Android tərzində qapaqlı kapsul"
         }
       }
     },
@@ -690,7 +756,9 @@
     "placeholder": "Əmr üçün > ilə başlayın...",
     "tab_applications": "Tətbiqlər",
     "tab_files": "Fayllar",
-    "placeholder_files": "Faylları axtarın və ya yol daxil edin..."
+    "placeholder_files": "Faylları axtarın və ya yol daxil edin...",
+    "tab_emojis": "Emojilər",
+    "placeholder_emojis": "Emojiləri axtarın və ya açar söz daxil edin..."
   },
   "calendar": {
     "loading": "Yüklənir...",

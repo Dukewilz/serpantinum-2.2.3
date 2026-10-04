@@ -10,6 +10,7 @@ import Quickshell.Io
 import "../"
 import "../reusables"
 import "../WindowRegistry.js" as WindowRegistry
+import "./EmojiData.js" as EmojiData
 
 PanelWindow {
     id: launcherWindow
@@ -47,6 +48,7 @@ PanelWindow {
 
     property string tabAppsTitle: (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_applications", "Applications") : "Applications"
     property string tabFilesTitle: (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_files", "Files") : "Files"
+    property string tabEmojisTitle: (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_emojis", "Emojis") : "Emojis"
 
     function saveLastTab() {
         let dir = (typeof Caching !== "undefined" && typeof Caching.getCacheDir === "function") ? Caching.getCacheDir("launcher") : "";
@@ -62,9 +64,12 @@ PanelWindow {
         }
         if (currentTabIndex === 0) {
             executeFilter(searchInput.text);
-        } else {
+        } else if (currentTabIndex === 1) {
             executeFileSearch(searchInput.text);
+        } else {
+            executeEmojiFilter(searchInput.text);
         }
+        launcherWindow.grabInputFocus();
     }
 
     FileView {
@@ -77,7 +82,7 @@ PanelWindow {
                 let val = text().trim();
                 if (val !== "") {
                     let idx = parseInt(val);
-                    if (!isNaN(idx) && (idx === 0 || idx === 1)) {
+                    if (!isNaN(idx) && (idx >= 0 && idx <= 2)) {
                         launcherWindow.currentTabIndex = idx;
                         tabSwitch.currentIndex = idx;
                     }
@@ -133,8 +138,10 @@ PanelWindow {
         appsLoaded = true;
         if (currentTabIndex === 0) {
             executeFilter("");
-        } else {
+        } else if (currentTabIndex === 1) {
             executeFileSearch("");
+        } else {
+            executeEmojiFilter("");
         }
     }
 
@@ -151,12 +158,15 @@ PanelWindow {
         function onLanguageChanged() {
             launcherWindow.tabAppsTitle = (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_applications", "Applications") : "Applications";
             launcherWindow.tabFilesTitle = (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_files", "Files") : "Files";
+            launcherWindow.tabEmojisTitle = (typeof I18n !== "undefined") ? I18n.t("applauncher.tab_emojis", "Emojis") : "Emojis";
             if (launcherWindow.isVisible) {
                 launcherWindow.loadApps();
                 if (launcherWindow.currentTabIndex === 0) {
                     launcherWindow.executeFilter(searchInput.text);
-                } else {
+                } else if (launcherWindow.currentTabIndex === 1) {
                     launcherWindow.executeFileSearch(searchInput.text);
+                } else {
+                    launcherWindow.executeEmojiFilter(searchInput.text);
                 }
             } else {
                 launcherWindow.appsLoaded = false;
@@ -181,16 +191,6 @@ PanelWindow {
     Connections {
         target: (typeof DesktopEntries !== "undefined" && DesktopEntries.applications) ? DesktopEntries.applications : null
         function onValuesChanged() {
-            if (launcherWindow.isVisible) {
-                launcherWindow.loadApps();
-                if (launcherWindow.currentTabIndex === 0) {
-                    launcherWindow.executeFilter(searchInput.text);
-                }
-            } else {
-                launcherWindow.appsLoaded = false;
-            }
-        }
-        function onCountChanged() {
             if (launcherWindow.isVisible) {
                 launcherWindow.loadApps();
                 if (launcherWindow.currentTabIndex === 0) {
@@ -329,8 +329,15 @@ PanelWindow {
     property real collapsedCenterHeight: s(110)
 
     property real targetLauncherHeight: {
-        let count = Math.min(appModel.count, customItemCount);
         let headerH = s(36) + s(28) + s(8) + s(28);
+        if (currentTabIndex === 2) {
+            let totalRows = Math.ceil(emojiModel.count / 5);
+            if (totalRows <= 0) {
+                return headerH;
+            }
+            return headerH + s(8) + (Math.min(totalRows, customItemCount) * s(60));
+        }
+        let count = Math.min(appModel.count, customItemCount);
         if (count <= 0) {
             return headerH;
         }
@@ -493,6 +500,15 @@ PanelWindow {
         }
     }
 
+    Timer {
+        id: emojiDebounceTimer
+        interval: 60
+        repeat: false
+        onTriggered: {
+            executeEmojiFilter(launcherWindow.pendingQuery);
+        }
+    }
+
     onIsVisibleChanged: {
         if (isVisible) {
             tabSwitch.currentIndex = launcherWindow.currentTabIndex;
@@ -505,14 +521,18 @@ PanelWindow {
                 searchInput.clear();
                 filterDebounceTimer.stop();
                 fileDebounceTimer.stop();
+                emojiDebounceTimer.stop();
             } else {
                 filterDebounceTimer.stop();
                 fileDebounceTimer.stop();
+                emojiDebounceTimer.stop();
             }
             if (launcherWindow.currentTabIndex === 0) {
                 executeFilter("");
-            } else {
+            } else if (launcherWindow.currentTabIndex === 1) {
                 executeFileSearch("");
+            } else {
+                executeEmojiFilter("");
             }
             if (launcherWindow.smartRanking && !rankFetcher.running) {
                 rankFetcher.running = true;
@@ -526,8 +546,10 @@ PanelWindow {
             introItems = 0.0;
             launcherWindow.appsLoaded = false;
             appList.resetScroll();
+            emojiGrid.resetScroll();
             filterDebounceTimer.stop();
             fileDebounceTimer.stop();
+            emojiDebounceTimer.stop();
             focusTimer.stop();
             focusRetryTimer.stop();
             focusFinalTimer.stop();
@@ -681,6 +703,10 @@ PanelWindow {
         id: appModel
     }
 
+    ListModel {
+        id: emojiModel
+    }
+
     function filterApps(query) {
         launcherWindow.pendingQuery = query;
         filterDebounceTimer.restart();
@@ -689,6 +715,58 @@ PanelWindow {
     function filterFiles(query) {
         launcherWindow.pendingQuery = query;
         fileDebounceTimer.restart();
+    }
+
+    function filterEmojis(query) {
+        launcherWindow.pendingQuery = query;
+        emojiDebounceTimer.restart();
+    }
+
+    function executeEmojiFilter(query) {
+        launcherWindow.isKeyboardNav = false;
+        if (keyboardNavTimer.running) keyboardNavTimer.stop();
+
+        let results = EmojiData.search(query ? query.trim() : "", 150);
+        applyEmojiModelItems(results);
+    }
+
+    function applyEmojiModelItems(filtered) {
+        let minCount = Math.min(emojiModel.count, filtered.length);
+        for (let i = 0; i < minCount; i++) {
+            let cur = emojiModel.get(i);
+            let target = filtered[i];
+            if (cur.emoji !== target.emoji || cur.name !== target.name || cur.category !== target.category) {
+                emojiModel.set(i, {
+                    emoji: target.emoji,
+                    name: target.name,
+                    category: target.category,
+                    keywordsText: target.keywords ? target.keywords.join(", ") : ""
+                });
+            }
+        }
+
+        if (emojiModel.count > filtered.length) {
+            for (let i = emojiModel.count - 1; i >= filtered.length; i--) {
+                emojiModel.remove(i);
+            }
+        } else if (emojiModel.count < filtered.length) {
+            for (let i = emojiModel.count; i < filtered.length; i++) {
+                let target = filtered[i];
+                emojiModel.append({
+                    emoji: target.emoji,
+                    name: target.name,
+                    category: target.category,
+                    keywordsText: target.keywords ? target.keywords.join(", ") : ""
+                });
+            }
+        }
+
+        emojiGrid.resetScroll();
+        if (emojiModel.count > 0) {
+            emojiGrid.currentIndex = 0;
+        } else {
+            emojiGrid.currentIndex = -1;
+        }
     }
 
     function executeFileSearch(query) {
@@ -939,6 +1017,14 @@ PanelWindow {
         }
 
         launchApp(item.name, item.desktop_id);
+    }
+
+    function activateEmoji(index) {
+        if (index < 0 || index >= emojiModel.count) return;
+        let item = emojiModel.get(index);
+        if (!item) return;
+        Quickshell.execDetached(["wl-copy", "--", item.emoji]);
+        closeLauncher();
     }
 
     function launchWidget(widgetName, widgetTarget) {
@@ -1362,6 +1448,7 @@ PanelWindow {
                     id: searchInput
                     z: 10
                     focus: true
+                    Keys.priority: Keys.BeforeItem
                     anchors.left: parent.left
                     anchors.right: parent.right
                     y: contentContainer.isSearchAtBottom ? Math.max(0, parent.height - height) : 0
@@ -1379,54 +1466,108 @@ PanelWindow {
                     placeholderText: {
                         if (launcherWindow.currentTabIndex === 1) {
                             return typeof I18n !== "undefined" ? I18n.t("applauncher.placeholder_files", "Search files or enter path...") : "Search files or enter path...";
+                        } else if (launcherWindow.currentTabIndex === 2) {
+                            return typeof I18n !== "undefined" ? I18n.t("applauncher.placeholder_emojis", "Search emojis by name or keyword...") : "Search emojis by name or keyword...";
                         }
                         return typeof I18n !== "undefined" ? I18n.t("applauncher.placeholder", "Start with > for a command...") : "Start with > for a command...";
                     }
                     showClearButton: true
 
+                    onHasFocusChanged: {
+                        if (!searchInput.hasFocus && launcherWindow.isVisible) {
+                            if (launcherWindow.currentTabIndex === 2) {
+                                emojiGrid.forceActiveFocus();
+                            } else {
+                                appList.forceActiveFocus();
+                            }
+                        }
+                    }
+
                     onTextEdited: function(newText) {
                         if (launcherWindow.currentTabIndex === 0) {
                             filterApps(newText);
-                        } else {
+                        } else if (launcherWindow.currentTabIndex === 1) {
                             filterFiles(newText);
+                        } else {
+                            filterEmojis(newText);
                         }
                     }
                     onCleared: {
                         if (launcherWindow.currentTabIndex === 0) {
                             filterApps("");
-                        } else {
+                        } else if (launcherWindow.currentTabIndex === 1) {
                             filterFiles("");
+                        } else {
+                            filterEmojis("");
                         }
                     }
 
                     Keys.onTabPressed: function(event) {
-                        launcherWindow.currentTabIndex = (launcherWindow.currentTabIndex === 0 ? 1 : 0);
+                        launcherWindow.currentTabIndex = (launcherWindow.currentTabIndex + 1) % 3;
                         tabSwitch.currentIndex = launcherWindow.currentTabIndex;
                         event.accepted = true;
                     }
                     Keys.onBacktabPressed: function(event) {
-                        launcherWindow.currentTabIndex = (launcherWindow.currentTabIndex === 0 ? 1 : 0);
+                        launcherWindow.currentTabIndex = (launcherWindow.currentTabIndex + 2) % 3;
                         tabSwitch.currentIndex = launcherWindow.currentTabIndex;
                         event.accepted = true;
                     }
                     Keys.onDownPressed: function(event) {
                         launcherWindow.isKeyboardNav = true;
                         keyboardNavTimer.restart();
-                        if (appList.currentIndex < appModel.count - 1) {
-                            appList.currentIndex++;
+                        if (launcherWindow.currentTabIndex === 2) {
+                            if (emojiGrid.currentIndex + 5 < emojiModel.count) {
+                                emojiGrid.currentIndex += 5;
+                            } else if (emojiGrid.currentIndex < emojiModel.count - 1) {
+                                emojiGrid.currentIndex = emojiModel.count - 1;
+                            }
+                        } else {
+                            if (appList.currentIndex < appModel.count - 1) {
+                                appList.currentIndex++;
+                            }
                         }
                         event.accepted = true;
                     }
                     Keys.onUpPressed: function(event) {
                         launcherWindow.isKeyboardNav = true;
                         keyboardNavTimer.restart();
-                        if (appList.currentIndex > 0) {
-                            appList.currentIndex--;
+                        if (launcherWindow.currentTabIndex === 2) {
+                            if (emojiGrid.currentIndex >= 5) {
+                                emojiGrid.currentIndex -= 5;
+                            }
+                        } else {
+                            if (appList.currentIndex > 0) {
+                                appList.currentIndex--;
+                            }
                         }
                         event.accepted = true;
                     }
+                    Keys.onLeftPressed: function(event) {
+                        if (launcherWindow.currentTabIndex === 2) {
+                            launcherWindow.isKeyboardNav = true;
+                            keyboardNavTimer.restart();
+                            if (emojiGrid.currentIndex > 0) {
+                                emojiGrid.currentIndex--;
+                            }
+                            event.accepted = true;
+                        }
+                    }
+                    Keys.onRightPressed: function(event) {
+                        if (launcherWindow.currentTabIndex === 2) {
+                            launcherWindow.isKeyboardNav = true;
+                            keyboardNavTimer.restart();
+                            if (emojiGrid.currentIndex < emojiModel.count - 1) {
+                                emojiGrid.currentIndex++;
+                            }
+                            event.accepted = true;
+                        }
+                    }
                     Keys.onReturnPressed: function(event) {
-                        activateIndex(appList.currentIndex);
+                        if (launcherWindow.currentTabIndex === 2) {
+                            activateEmoji(emojiGrid.currentIndex);
+                        } else {
+                            activateIndex(appList.currentIndex);
+                        }
                         event.accepted = true;
                     }
                     Keys.onEscapePressed: function(event) {
@@ -1450,7 +1591,7 @@ PanelWindow {
                     accentColor: ThemeBackend.mauve
                     textColor: ThemeBackend.text
                     activeTextColor: ThemeBackend.crust
-                    options: [launcherWindow.tabAppsTitle, launcherWindow.tabFilesTitle]
+                    options: [launcherWindow.tabAppsTitle, launcherWindow.tabFilesTitle, launcherWindow.tabEmojisTitle]
                     currentIndex: launcherWindow.currentTabIndex
                     onValueChanged: function(index, value) {
                         launcherWindow.currentTabIndex = index;
@@ -1486,14 +1627,24 @@ PanelWindow {
                     ListView {
                         id: appList
                         anchors.fill: parent
+                        visible: launcherWindow.currentTabIndex !== 2
                         clip: true
                         model: appModel
                         spacing: launcherWindow.s(4)
                         currentIndex: 0
                         boundsBehavior: Flickable.StopAtBounds
                         cacheBuffer: launcherWindow.s(500)
-
                         highlightFollowsCurrentItem: false
+
+                        Keys.forwardTo: [searchInput]
+
+                        Keys.onPressed: function(event) {
+                            if (event.text && event.text.length > 0 && event.key !== Qt.Key_Return && event.key !== Qt.Key_Enter && event.key !== Qt.Key_Escape && event.key !== Qt.Key_Tab && event.key !== Qt.Key_Backtab) {
+                                launcherWindow.grabInputFocus();
+                                searchInput.text += event.text;
+                                event.accepted = true;
+                            }
+                        }
 
                         function getItemY(idx) {
                             return idx * (launcherWindow.s(44) + spacing);
@@ -1769,6 +1920,201 @@ PanelWindow {
                                         activateIndex(index);
                                     }
                                 }
+                            }
+                        }
+                    }
+
+                    GridView {
+                        id: emojiGrid
+                        anchors.fill: parent
+                        visible: launcherWindow.currentTabIndex === 2
+                        clip: true
+                        model: emojiModel
+                        cellWidth: width / 5
+                        cellHeight: launcherWindow.s(60)
+                        currentIndex: 0
+                        boundsBehavior: Flickable.StopAtBounds
+                        cacheBuffer: launcherWindow.s(400)
+                        highlightFollowsCurrentItem: false
+
+                        Keys.forwardTo: [searchInput]
+
+                        Keys.onPressed: function(event) {
+                            if (event.text && event.text.length > 0 && event.key !== Qt.Key_Return && event.key !== Qt.Key_Enter && event.key !== Qt.Key_Escape && event.key !== Qt.Key_Tab && event.key !== Qt.Key_Backtab) {
+                                launcherWindow.grabInputFocus();
+                                searchInput.text += event.text;
+                                event.accepted = true;
+                            }
+                        }
+
+                        function resetScroll() {
+                            emojiScrollAnim.stop();
+                            contentY = 0;
+                        }
+
+                        onContentYChanged: {
+                            if (contentY < 0 && !moving && !flicking) {
+                                contentY = 0;
+                            }
+                        }
+
+                        function ensureVisible(idx, animated) {
+                            if (idx < 0 || emojiModel.count === 0) return;
+                            let row = Math.floor(idx / 5);
+                            let rowH = cellHeight;
+                            let itemTop = row * rowH;
+                            let itemBottom = itemTop + rowH;
+
+                            let curContentY = emojiScrollAnim.running ? emojiScrollAnim.to : contentY;
+                            let totalRows = Math.ceil(emojiModel.count / 5);
+                            let totalH = Math.max(0, totalRows * rowH);
+                            let maxScroll = Math.max(0, totalH - height);
+                            let newContentY = curContentY;
+
+                            if (itemTop < curContentY) {
+                                newContentY = itemTop;
+                            } else if (itemBottom > curContentY + height) {
+                                newContentY = itemBottom - height;
+                            }
+
+                            newContentY = Math.max(0, Math.min(maxScroll, newContentY));
+
+                            if (Math.abs(newContentY - contentY) > 0.5) {
+                                if (animated) {
+                                    emojiScrollAnim.stop();
+                                    emojiScrollAnim.from = contentY;
+                                    emojiScrollAnim.to = newContentY;
+                                    emojiScrollAnim.start();
+                                } else {
+                                    emojiScrollAnim.stop();
+                                    contentY = newContentY;
+                                }
+                            }
+                        }
+
+                        onCurrentIndexChanged: {
+                            if (currentIndex >= 0) {
+                                ensureVisible(currentIndex, launcherWindow.isKeyboardNav);
+                            }
+                        }
+
+                        NumberAnimation {
+                            id: emojiScrollAnim
+                            target: emojiGrid
+                            property: "contentY"
+                            duration: 220
+                            easing.type: Easing.OutCubic
+                        }
+
+                        delegate: Item {
+                            id: emojiDelegateRoot
+                            width: emojiGrid.cellWidth
+                            height: emojiGrid.cellHeight
+                            clip: false
+
+                            readonly property bool isSelected: index === emojiGrid.currentIndex
+
+                            opacity: launcherWindow.getItemOpacity(Math.floor(index / 5))
+                            transform: Translate {
+                                y: launcherWindow.s(15) * (1.0 - launcherWindow.getItemProgress(Math.floor(index / 5)))
+                            }
+
+                            Item {
+                                id: emojiDelegateContent
+                                anchors.fill: parent
+                                anchors.margins: launcherWindow.s(3)
+
+                                scale: emojiMa.pressed ? 0.92 : (emojiDelegateRoot.isSelected ? 1.04 : (emojiMa.containsMouse ? 1.02 : 1.0))
+                                Behavior on scale {
+                                    NumberAnimation { duration: 160; easing.type: Easing.OutBack; easing.overshoot: 1.25 }
+                                }
+
+                                Rectangle {
+                                    id: emojiBg
+                                    anchors.fill: parent
+                                    radius: ThemeBackend.borderRadius
+                                    color: emojiDelegateRoot.isSelected
+                                           ? ThemeBackend.mauve
+                                           : (emojiMa.containsMouse ? Qt.alpha(ThemeBackend.surface1, 0.7) : Qt.alpha(ThemeBackend.surface0, 0.45))
+                                    border.width: emojiDelegateRoot.isSelected ? 0 : 1
+                                    border.color: emojiDelegateRoot.isSelected ? "transparent" : Qt.alpha(ThemeBackend.surface2, 0.3)
+
+                                    Behavior on color {
+                                        ColorAnimation { duration: 140; easing.type: Easing.OutCubic }
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: launcherWindow.s(4)
+                                    spacing: launcherWindow.s(1)
+
+                                    Text {
+                                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                                        text: model.emoji
+                                        font.pixelSize: launcherWindow.s(22)
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+
+                                    Text {
+                                        Layout.fillWidth: true
+                                        Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                                        text: model.name
+                                        font.family: ThemeBackend.fontFamily
+                                        font.pixelSize: launcherWindow.s(9)
+                                        font.weight: emojiDelegateRoot.isSelected ? Font.Bold : Font.Normal
+                                        color: emojiDelegateRoot.isSelected ? ThemeBackend.crust : ThemeBackend.subtext0
+                                        elide: Text.ElideRight
+                                        horizontalAlignment: Text.AlignHCenter
+                                        maximumLineCount: 1
+
+                                        Behavior on color {
+                                            ColorAnimation { duration: 140; easing.type: Easing.OutCubic }
+                                        }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: emojiMa
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        launcherWindow.isKeyboardNav = false;
+                                        emojiGrid.currentIndex = index;
+                                        activateEmoji(index);
+                                    }
+                                    onEntered: {
+                                        if (!launcherWindow.isKeyboardNav) {
+                                            emojiGrid.currentIndex = index;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Item {
+                        anchors.centerIn: parent
+                        visible: launcherWindow.currentTabIndex === 2 && emojiModel.count === 0
+                        width: parent.width
+                        height: launcherWindow.s(60)
+
+                        ColumnLayout {
+                            anchors.centerIn: parent
+                            spacing: launcherWindow.s(6)
+                            Text {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: "🔍"
+                                font.pixelSize: launcherWindow.s(24)
+                            }
+                            Text {
+                                Layout.alignment: Qt.AlignHCenter
+                                text: typeof I18n !== "undefined" ? I18n.t("applauncher.no_emojis_found", "No emojis found") : "No emojis found"
+                                font.family: ThemeBackend.fontFamily
+                                font.pixelSize: launcherWindow.s(12)
+                                color: ThemeBackend.subtext0
                             }
                         }
                     }

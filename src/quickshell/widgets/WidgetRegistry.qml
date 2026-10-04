@@ -285,19 +285,19 @@ QtObject {
     property var types: ({
         "visualizer": {
             name: I18n.t("widgets.types.visualizer"),
-            icon: "󱑽",
+            icon: String.fromCodePoint(0xF147D),
             iconOffsetX: -2,
             defaultWidth: Math.round((Quickshell.screens && Quickshell.screens.length > 0 ? Quickshell.screens[0].width : 1920) / 2),
             defaultHeight: 180,
             defaultVariant: "bars",
             variants: {
-                "bars": { file: "faces/VisualizerFace.qml", icon: "1", label: I18n.t("widgets.variants.bars") },
-                "continuous": { file: "faces/VisualizerFaceContinuous.qml", icon: "2", label: I18n.t("widgets.variants.continuous") }
+                "bars": { file: "faces/visualizer/VisualizerFace.qml", icon: "1", label: I18n.t("widgets.variants.bars") },
+                "continuous": { file: "faces/visualizer/VisualizerFaceContinuous.qml", icon: "2", label: I18n.t("widgets.variants.continuous") }
             },
             additionalSettings: [
                 {
                     id: "stretchWidth",
-                    icon: "󰊓",
+                    icon: String.fromCodePoint(0xF0293),
                     iconFontSize: 16,
                     action: "stretchWidth",
                     row: "top",
@@ -308,37 +308,37 @@ QtObject {
         },
         "time": {
             name: I18n.t("widgets.types.clock"),
-            icon: "󰥔",
+            icon: String.fromCodePoint(0xF0954),
             defaultWidth: 250,
-            iconOffsetX: -1,
+            iconOffsetX: 0,
             defaultHeight: 120,
             defaultVariant: "digital",
             variants: {
-                "digital":        { file: "faces/ClockFaceDigital.qml",        icon: "1", label: I18n.t("widgets.variants.digital") },
-                "analog":         { file: "faces/ClockFaceAnalog.qml",         icon: "2", label: I18n.t("widgets.variants.analog") },
-                "minimal":        { file: "faces/ClockFaceMinimal.qml",        icon: "3", label: I18n.t("widgets.variants.minimal") },
-                "material":       { file: "faces/ClockFaceMaterial.qml",       icon: "4", label: I18n.t("widgets.variants.material") },
-                "materialAnalog": { file: "faces/ClockFaceMaterialAnalog.qml", icon: "5", label: I18n.t("widgets.variants.materialAnalog") },
-                "lumen":          { file: "faces/ClockFaceMaterialLumen.qml",  icon: "6", label: I18n.t("widgets.variants.lumen") }
+                "digital":        { file: "faces/clock/ClockFaceDigital.qml",        icon: "1", label: I18n.t("widgets.variants.digital") },
+                "analog":         { file: "faces/clock/ClockFaceAnalog.qml",         icon: "2", label: I18n.t("widgets.variants.analog") },
+                "minimal":        { file: "faces/clock/ClockFaceMinimal.qml",        icon: "3", label: I18n.t("widgets.variants.minimal") },
+                "material":       { file: "faces/clock/ClockFaceMaterial.qml",       icon: "4", label: I18n.t("widgets.variants.material") },
+                "materialAnalog": { file: "faces/clock/ClockFaceMaterialAnalog.qml", icon: "5", label: I18n.t("widgets.variants.materialAnalog") },
+                "lumen":          { file: "faces/clock/ClockFaceMaterialLumen.qml",  icon: "6", label: I18n.t("widgets.variants.lumen") }
             }
         },
         "music": {
             name: I18n.t("widgets.types.music"),
-            icon: "󰎈",
+            icon: String.fromCodePoint(0xF0388),
             defaultWidth: 340,
             defaultHeight: 120,
             defaultVariant: "full",
             variants: {
-                "full":         { file: "faces/MusicFace.qml",             icon: "1", label: I18n.t("widgets.variants.full") },
-                "round":        { file: "faces/MusicFaceRound.qml",        icon: "2", label: I18n.t("widgets.variants.round") },
-                "lyrics":       { file: "faces/MusicFaceLyrics.qml",       icon: "3", label: I18n.t("widgets.variants.lyrics") },
-                "simpleLyrics": { file: "faces/MusicFaceLyricsSimple.qml", icon: "4", label: typeof I18n !== "undefined" ? I18n.t("widgets.variants.simpleLyrics", "Simple Lyrics") : "Simple Lyrics" }
+                "full":         { file: "faces/music/MusicFace.qml",             icon: "1", label: I18n.t("widgets.variants.full") },
+                "round":        { file: "faces/music/MusicFaceRound.qml",        icon: "2", label: I18n.t("widgets.variants.round") },
+                "lyrics":       { file: "faces/music/MusicFaceLyrics.qml",       icon: "3", label: I18n.t("widgets.variants.lyrics") },
+                "simpleLyrics": { file: "faces/music/MusicFaceLyricsSimple.qml", icon: "4", label: typeof I18n !== "undefined" ? I18n.t("widgets.variants.simpleLyrics", "Simple Lyrics") : "Simple Lyrics" }
             },
             additionalSettings: [
                 {
                     id: "lyricsLines",
                     name: typeof I18n !== "undefined" ? I18n.t("widgets.settings.lyricsLines", "Lines") : "Lines",
-                    icon: "󰎈",
+                    icon: String.fromCodePoint(0xF0388),
                     iconFontSize: 16,
                     action: "lyricsLines",
                     type: "custom",
@@ -356,7 +356,7 @@ QtObject {
                 {
                     id: "lyricsAlignment",
                     name: typeof I18n !== "undefined" ? I18n.t("widgets.settings.lyricsAlignment", "Alignment") : "Alignment",
-                    icon: "󰝥",
+                    icon: String.fromCodePoint(0xF0765),
                     iconFontSize: 16,
                     action: "lyricsAlignment",
                     type: "custom",
@@ -371,34 +371,34 @@ QtObject {
         },
         "weather": {
             name: I18n.t("widgets.types.weather"),
-            icon: "󰖐",
-            iconOffsetX: -4,
+            icon: String.fromCodePoint(0xF0590),
+            iconOffsetX: 0,
             defaultWidth: 250,
             defaultHeight: 120,
             defaultVariant: "compact",
             variants: {
-                "compact": { file: "faces/WeatherFaceCompact.qml", icon: "1", label: I18n.t("widgets.variants.compact") },
-                "full":    { file: "faces/WeatherFaceFull.qml",    icon: "2", label: I18n.t("widgets.variants.full") },
-                "round":   { file: "faces/WeatherFaceRound.qml",   icon: "3", label: I18n.t("widgets.variants.round") }
+                "compact": { file: "faces/weather/WeatherFaceCompact.qml", icon: "1", label: I18n.t("widgets.variants.compact") },
+                "full":    { file: "faces/weather/WeatherFaceFull.qml",    icon: "2", label: I18n.t("widgets.variants.full") },
+                "round":   { file: "faces/weather/WeatherFaceRound.qml",   icon: "3", label: I18n.t("widgets.variants.round") }
             }
         },
         "image": {
             name: I18n.t("widgets.types.image"),
-            icon: "󰋩",
+            icon: String.fromCodePoint(0xF02E9),
             iconOffsetX: -1,
             defaultWidth: 300,
             defaultHeight: 200,
             defaultVariant: "rect",
             requiresFilePicker: true,
             variants: {
-                "rect":    { file: "faces/ImageFaceRect.qml",    icon: "1", label: I18n.t("widgets.variants.rect") },
-                "rounded": { file: "faces/ImageFaceRounded.qml", icon: "2", label: I18n.t("widgets.variants.rounded") },
-                "round":   { file: "faces/ImageFaceRound.qml",   icon: "3", label: I18n.t("widgets.variants.round") }
+                "rect":    { file: "faces/image/ImageFaceRect.qml",    icon: "1", label: I18n.t("widgets.variants.rect") },
+                "rounded": { file: "faces/image/ImageFaceRounded.qml", icon: "2", label: I18n.t("widgets.variants.rounded") },
+                "round":   { file: "faces/image/ImageFaceRound.qml",   icon: "3", label: I18n.t("widgets.variants.round") }
             },
             additionalSettings: [
                 {
                     id: "pickImage",
-                    icon: "󰋩",
+                    icon: String.fromCodePoint(0xF02E9),
                     iconFontSize: 16,
                     action: "pickImage",
                     row: "top",
@@ -409,18 +409,18 @@ QtObject {
         },
         "user": {
             name: I18n.t("widgets.types.user"),
-            icon: "",
+            icon: String.fromCodePoint(0xF0004),
             iconOffsetX: 0,
             defaultWidth: 260,
             defaultHeight: 140,
             defaultVariant: "default",
             variants: {
-                "default": { file: "faces/UserFace.qml", icon: "1", label: I18n.t("widgets.variants.default") }
+                "default": { file: "faces/user/UserFace.qml", icon: "1", label: I18n.t("widgets.variants.default") }
             }
         },
         "cpu": {
             name: I18n.t("quickactions.systemusage.cpu"),
-            icon: "\uF2DB",
+            icon: String.fromCodePoint(0xF035B),
             iconOffsetX: 0,
             defaultWidth: 180,
             defaultHeight: 130,
@@ -431,7 +431,7 @@ QtObject {
         },
         "ram": {
             name: I18n.t("quickactions.systemusage.ram"),
-            icon: "\uF538",
+            icon: String.fromCodePoint(0xF035C),
             iconOffsetX: 0,
             defaultWidth: 180,
             defaultHeight: 130,
@@ -442,7 +442,7 @@ QtObject {
         },
         "temp": {
             name: I18n.t("quickactions.systemusage.temp"),
-            icon: "\uF2C9",
+            icon: String.fromCodePoint(0xF050F),
             iconOffsetX: 0,
             defaultWidth: 180,
             defaultHeight: 130,
@@ -453,7 +453,7 @@ QtObject {
         },
         "disk": {
             name: I18n.t("quickactions.systemusage.disk"),
-            icon: "\uF0A0",
+            icon: String.fromCodePoint(0xF02CA),
             iconOffsetX: 0,
             defaultWidth: 180,
             defaultHeight: 130,
@@ -464,24 +464,24 @@ QtObject {
         },
         "battery": {
             name: I18n.t("widgets.types.battery"),
-            icon: "󰁹",
+            icon: String.fromCodePoint(0xF0079),
             iconOffsetX: 1,
             defaultWidth: 260,
             defaultHeight: 90,
             defaultVariant: "default",
             variants: {
-                "default": { file: "faces/BatteryFace.qml", icon: "1", label: I18n.t("widgets.variants.default") }
+                "default": { file: "faces/battery/BatteryFace.qml", icon: "1", label: I18n.t("widgets.variants.default") }
             }
         },
         "github": {
             name: typeof I18n !== "undefined" ? I18n.t("widgets.types.github", "GitHub") : "GitHub",
-            icon: "󰊤",
+            icon: String.fromCodePoint(0xF02A4),
             iconOffsetX: -1,
             defaultWidth: 540,
             defaultHeight: 180,
             defaultVariant: "default",
             variants: {
-                "default": { file: "faces/GithubFace.qml", icon: "1", label: typeof I18n !== "undefined" ? I18n.t("widgets.variants.default", "Default") : "Default" }
+                "default": { file: "faces/github/GithubFace.qml", icon: "1", label: typeof I18n !== "undefined" ? I18n.t("widgets.variants.default", "Default") : "Default" }
             }
         }
     })

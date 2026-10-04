@@ -130,17 +130,12 @@ def get_active_window_niri():
     except Exception:
         return "Desktop", "Desktop"
 
+LOCK_RUN_DIR = os.environ.get("QS_RUN_LOCK", os.path.join(os.environ.get("QS_RUN_DIR", f"{os.environ.get('XDG_RUNTIME_DIR', '/tmp')}/serpantinum"), "lock"))
+LOCK_STATE_PATH = os.path.join(LOCK_RUN_DIR, "locked")
+
 def is_locked():
-    try:
-        subprocess.check_output(['pgrep', '-x', 'hyprlock'])
+    if os.path.exists(LOCK_STATE_PATH):
         return True
-    except subprocess.CalledProcessError:
-        pass
-    try:
-        subprocess.check_output(['pgrep', '-x', 'swaylock'])
-        return True
-    except subprocess.CalledProcessError:
-        pass
     return False
 
 def listen_hyprland_ipc():
@@ -465,6 +460,9 @@ def main():
     accumulated_time = 0.0
     tick_counter = 0
 
+    cached_settings = {}
+    last_settings_mtime = 0
+
     while True:
         time.sleep(1)
         now_monotonic = time.monotonic()
@@ -487,16 +485,18 @@ def main():
             notified_apps = set()
             last_notification_date = today
 
-        settings = {}
         if tick_counter % 5 == 1:
             try:
                 if os.path.exists(CONFIG_PATH):
-                    with open(CONFIG_PATH, "r") as f:
-                        settings = json.load(f)
+                    mtime = os.path.getmtime(CONFIG_PATH)
+                    if mtime != last_settings_mtime:
+                        last_settings_mtime = mtime
+                        with open(CONFIG_PATH, "r") as f:
+                            cached_settings = json.load(f)
             except Exception:
                 pass
                 
-        wellbeing = settings.get("wellbeing", {})
+        wellbeing = cached_settings.get("wellbeing", {})
         excluded_apps = wellbeing.get("excludedApps", [])
         overall_limit = wellbeing.get("overallDailyLimit", 0)
         app_limits = wellbeing.get("appLimits", {})

@@ -13,6 +13,7 @@ Item {
     property int cornerRadius: 12
 
     property string buttonIcon: ""
+    property string iconFont: ThemeBackend.iconFont
     property int iconFontSize: 18
     property int iconOffsetX: 0
     property int iconOffsetY: 0
@@ -56,6 +57,7 @@ Item {
             anchors.fill: parent
             text: root.buttonIcon
             pixelSize: root.iconFontSize
+                    fontFamily: root.iconFont
             color: root.textColor
             opticalCentering: root.opticalCentering
             // Legacy caller offsets were font-bearing workarounds. Measured
