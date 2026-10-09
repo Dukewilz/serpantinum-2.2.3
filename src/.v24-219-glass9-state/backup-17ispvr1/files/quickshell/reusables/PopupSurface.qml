@@ -1,0 +1,102 @@
+import QtQuick
+import QtQuick.Effects
+import "../"
+
+Item {
+    id: ambient
+
+    property color accentColor: ThemeBackend.mauve
+    property color secondaryColor: ThemeBackend.sapphire
+    property color tertiaryColor: ThemeBackend.blue
+    property string glyph: ""
+    property real strength: 1.0
+    // The host popup must opt in while it is actually active.  Popups are
+    // cached by Main.qml, so Item.visible alone is not a safe lifecycle flag.
+    property bool active: false
+    property bool animate: active
+    property bool allowWallpaper: true
+    property real cornerRadius: {
+        if (parent && parent.radius !== undefined) return Math.max(0, Number(parent.radius));
+        return Math.max(0, ThemeBackend.clampedBorderRadius);
+    }
+
+    readonly property real baseLuma: 0.2126 * ThemeBackend.base.r + 0.7152 * ThemeBackend.base.g + 0.0722 * ThemeBackend.base.b
+    readonly property real surfaceLuma: 0.2126 * ThemeBackend.surface0.r + 0.7152 * ThemeBackend.surface0.g + 0.0722 * ThemeBackend.surface0.b
+    readonly property bool extremePalette: baseLuma < 0.075 || baseLuma > 0.90
+    readonly property bool lowTonalSeparation: Math.abs(baseLuma - surfaceLuma) < 0.055
+    readonly property real paletteBoost: extremePalette ? 1.82 : (lowTonalSeparation ? 1.48 : 1.0)
+    readonly property real effectiveStrength: Math.max(0.0, strength * ThemeBackend.uiAmbientStrength)
+    readonly property bool wallpaperActive: active && allowWallpaper && ThemeBackend.uiBackgroundUseWallpaper && ThemeBackend.uiBackgroundImageSource !== ""
+
+    Rectangle {
+        id: roundedMask
+        anchors.fill: parent
+        radius: ambient.cornerRadius
+        color: "white"
+        visible: false
+        antialiasing: true
+        layer.enabled: true
+        layer.smooth: true
+    }
+
+    Item {
+        id: effectsLayer
+        anchors.fill: parent
+        layer.enabled: ambient.active && ambient.cornerRadius > 0
+        layer.smooth: true
+        layer.effect: MultiEffect {
+            autoPaddingEnabled: false
+            maskEnabled: true
+            maskSource: roundedMask
+        }
+
+        Loader {
+            anchors.fill: parent
+            active: ambient.wallpaperActive
+            asynchronous: true
+            sourceComponent: Component {
+                Image {
+                    source: ThemeBackend.uiBackgroundImageSource
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    cache: true
+                    smooth: true
+                    mipmap: true
+                    visible: status === Image.Ready
+                    layer.enabled: visible && ambient.active && ThemeBackend.uiBackgroundBlur > 0.01
+                    layer.smooth: true
+                    layer.effect: MultiEffect {
+                        blurEnabled: true
+                        blurMax: 24
+                        blur: ThemeBackend.uiBackgroundBlur
+                        autoPaddingEnabled: false
+                    }
+                }
+            }
+        }
+
+        // Base color overlay — always visible when active so that opacity
+        // changes are reflected in all source modes (theme, current, custom).
+        // In wallpaper modes the wallpaper image renders behind this overlay.
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.alpha(ThemeBackend.base, ThemeBackend.uiBackgroundOpacity)
+            visible: ambient.active
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            visible: ambient.active && ThemeBackend.uiGlossy
+            radius: ambient.cornerRadius
+            gradient: Gradient {
+                GradientStop { position: 0; color: Qt.alpha(ThemeBackend.text, 0.14) }
+                GradientStop { position: 0.35; color: Qt.alpha(ThemeBackend.mauve, 0.035) }
+                GradientStop { position: 0.7; color: "transparent" }
+                GradientStop { position: 1; color: Qt.alpha(ThemeBackend.text, 0.045) }
+            }
+            border.width: 1
+            border.color: Qt.alpha(ThemeBackend.text, 0.18)
+        }
+
+    }
+}

@@ -90,12 +90,12 @@ Item {
             else if (m < 0) { if (h > 0) { m = 59; h--; } else { m = 0; } }
         } else if (root.activeSegment === 2 && root.showSeconds) {
             sec += dir;
-            if (sec > 59) {
-                sec = 0; m++;
-                if (m > 59) { m = 0; h++; }
-            } else if (sec < 0) {
-                if (m > 0) { sec = 59; m--; }
-                else if (h > 0) { sec = 59; m = 59; h--; }
+            if (sec > 59) { 
+                sec = 0; m++; 
+                if (m > 59) { m = 0; h++; } 
+            } else if (sec < 0) { 
+                if (m > 0) { sec = 59; m--; } 
+                else if (h > 0) { sec = 59; m = 59; h--; } 
                 else { sec = 0; }
             }
         }
@@ -220,7 +220,7 @@ Item {
             hoverEnabled: root.enabled
             enabled: root.enabled
             cursorShape: isEditing ? Qt.IBeamCursor : (root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor)
-
+            
             property real wheelAccumulator: 0
 
             onClicked: {
@@ -272,7 +272,7 @@ Item {
         border.width: 1
         clip: true
         opacity: root.enabled ? 1.0 : 0.5
-
+        
         Behavior on color { ColorAnimation { duration: 180 } }
         Behavior on opacity { NumberAnimation { duration: 180 } }
 
@@ -305,13 +305,13 @@ Item {
                 onEditFinished: newVal => root.setSegmentValue(0, newVal)
             }
 
-            Text {
+            Text { 
                 text: ":"
                 font.family: "JetBrains Mono"
                 font.weight: Font.Bold
                 font.pixelSize: root.fontPixelSize
                 color: root.alpha(root.subTextColor, 0.4)
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenter: parent.verticalCenter 
             }
 
             TimerSegment {
@@ -323,13 +323,13 @@ Item {
                 onEditFinished: newVal => root.setSegmentValue(1, newVal)
             }
 
-            Text {
+            Text { 
                 text: ":"
                 font.family: "JetBrains Mono"
                 font.weight: Font.Bold
                 font.pixelSize: root.fontPixelSize
                 color: root.alpha(root.subTextColor, 0.4)
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenter: parent.verticalCenter 
                 visible: root.showSeconds
             }
 

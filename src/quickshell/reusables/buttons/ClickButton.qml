@@ -19,7 +19,7 @@ Item {
     property real iconBoxWidth: buttonIcon !== "" ? Math.max(20, iconFontSize + 6) : 0
     property real iconOffsetX: 0
     property real iconOffsetY: 0
-
+    
     property int maxTextWidth: 0
     property int maxWidth: 0
     property int contentAlignment: Qt.AlignHCenter

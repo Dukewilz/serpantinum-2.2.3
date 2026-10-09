@@ -1,0 +1,89 @@
+{
+  "runtime": "/home/alimzicus/.local/share/serpantinum/src",
+  "items": [
+    {
+      "path": "src/assets/languages/az.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "1d5c0ba3f4cee1392b4ae8bbeb3844e000ac1496e1ae3da3cce224798bfb13ac"
+    },
+    {
+      "path": "src/assets/languages/de.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "286bd00ddd19a054ae168f617e40a648f0bb9a4c0cf5ac9da5beb3a0295ecc12"
+    },
+    {
+      "path": "src/assets/languages/en.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "81a969b1c693fff4b73fb1ee98349f2df0c6d38a96e1acbef81d8d09690fa01a"
+    },
+    {
+      "path": "src/assets/languages/es.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "4b185532dd311a459c6fff5f7d45d7c0f6614b420ebedcd55c8ee5e5cf8f9263"
+    },
+    {
+      "path": "src/assets/languages/hy.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "4b8456e1d0fbb49e88d68e6297443503ab0fef3da9552df7cb479cb93f9cadbe"
+    },
+    {
+      "path": "src/assets/languages/it.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "758b1ececdd50e3e132f9709559bfb3a46ec78f3aa60ebcd203f9111c6a60e23"
+    },
+    {
+      "path": "src/assets/languages/ko.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "b40f2b2e518180bc87e42bd8369ee0e79c97bc51a0cee709c5f0358d0929c65e"
+    },
+    {
+      "path": "src/assets/languages/pt.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "034bbad25d77a822d00ba720d5684f1f29a14ed5231c38d13e62e0593ea28ef1"
+    },
+    {
+      "path": "src/assets/languages/ru.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "28b39910526aa165eeb738bf008449fd34105b59447618c48b56a4fa3c4b36fc"
+    },
+    {
+      "path": "src/assets/languages/vi.json",
+      "before": 420,
+      "after": 493,
+      "sha256": "b462cb2768de64873aa1271a2adb5e1a069a39ce5ff0a77610b02102aa258915"
+    },
+    {
+      "path": "src/scripts/brightness.sh",
+      "before": 420,
+      "after": 493,
+      "sha256": "c9a26d7df79239dd54170de5e9e1e97572fc5f209308da7f9461f1605e8ff6b1"
+    },
+    {
+      "path": "src/scripts/config.sh",
+      "before": 420,
+      "after": 493,
+      "sha256": "d1acee6a23df2fb78a737cd487571d3ae05b83716a58072366d17e2dc00df26e"
+    },
+    {
+      "path": "src/scripts/qs_manager.sh",
+      "before": 420,
+      "after": 493,
+      "sha256": "253636a24357530f405101cc534fa186634808d0f57d0d8a4a3d78494316bf6b"
+    },
+    {
+      "path": "src/scripts/wallpaper/matugen_reload.sh",
+      "before": 420,
+      "after": 493,
+      "sha256": "65095f2ee2335850525712f3dfbf5bcea9df7b32aacab7e9f7f4ed99b7afe9ef"
+    }
+  ]
+}

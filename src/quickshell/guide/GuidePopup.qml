@@ -540,12 +540,12 @@ Item {
     property var tabsModel: [
         { id: "Welcome", key: "welcome", name: "Welcome", icon: "󰋜", file: "WelcomeTab.qml", iconOffsetX: -1 },
         { id: "General", key: "general", name: "General", icon: "󰒓", file: "general/GeneralTab.qml", iconOffsetX: 0 },
-        {
-            id: "Display",
-            key: "display",
-            name: "Display",
-            icon: "󰃠",
-            file: "display/DisplayMainTab.qml",
+        { 
+            id: "Display", 
+            key: "display", 
+            name: "Display", 
+            icon: "󰃠", 
+            file: "display/DisplayMainTab.qml", 
             iconOffsetX: 0,
             subtabs: [
                 { id: "DisplayGeneral", key: "display_general", name: "Display", icon: "󰃠", file: "display/DisplayMainTab.qml", iconOffsetX: 1 },
@@ -553,12 +553,12 @@ Item {
             ]
         },
         { id: "Theme", key: "theme", name: "Theme", icon: "󰏘", file: "theme/ThemeTab.qml", iconOffsetX: 0 },
-        {
-            id: "Bar",
-            key: "bar",
-            name: "Bar",
-            icon: "󰹑",
-            file: "bar/BarGeneralTab.qml",
+        { 
+            id: "Bar", 
+            key: "bar", 
+            name: "Bar", 
+            icon: "󰹑", 
+            file: "bar/BarGeneralTab.qml", 
             iconOffsetX: -2,
             subtabs: [
                 { id: "BarGeneral", key: "bar_general", name: "General", icon: "󰒓", file: "bar/BarGeneralTab.qml", iconOffsetX: 1 },
@@ -569,7 +569,7 @@ Item {
         { id: "Dock", key: "dock", name: "Dock", icon: "󰮯", file: "DockTab.qml", iconOffsetX: 0 },
         { id: "On-Screen Display", key: "osd", name: "On-Screen Display", icon: "󰕾", file: "OnScreenDisplayTab.qml", iconOffsetX: 0 },
         { id: "Notifications", key: "notifications", name: "Notifications", icon: "󰂚", file: "notifications/NotificationsTab.qml", iconOffsetX: 0 },
-        { id: "Wellbeing", key: "wellbeing", name: "Wellbeing", icon: "󰄉", file: "wellbeing/DigitalWellbeingTab.qml", iconOffsetX: 0 },
+        { id: "Wellbeing", key: "wellbeing", name: "Wellbeing", icon: "󰄉", file: "wellbeing/DigitalWellbeingTab.qml", iconOffsetX: 0 },        
         { id: "Idle", key: "idle", name: "Idle", icon: "󰒲", file: "IdleTab.qml", iconOffsetX: 0 },
         { id: "About", key: "about", name: "About", icon: "󰋽", file: "AboutTab.qml", iconOffsetX: 0 }
     ]
@@ -626,8 +626,8 @@ Item {
         let lower = String(tabName).toLowerCase().replace(/^guide\.tabs\./, "");
         for (let i = 0; i < tabsModel.length; i++) {
             let t = tabsModel[i];
-            if ((t.id && t.id.toLowerCase() === lower) ||
-                (t.name && t.name.toLowerCase() === lower) ||
+            if ((t.id && t.id.toLowerCase() === lower) || 
+                (t.name && t.name.toLowerCase() === lower) || 
                 (t.key && t.key.toLowerCase() === lower)) {
                 currentTab = i;
                 expandedTab = (t.subtabs && t.subtabs.length > 0) ? i : -1;
@@ -637,9 +637,9 @@ Item {
                     if (!isNaN(sNum) && t.subtabs && sNum >= 0 && sNum < t.subtabs.length) {
                         currentSubTab = sNum;
                     } else if (t.subtabs) {
-                        let sIdx = t.subtabs.findIndex(st =>
-                            (st.id && st.id.toLowerCase() === sLower) ||
-                            (st.name && st.name.toLowerCase() === sLower) ||
+                        let sIdx = t.subtabs.findIndex(st => 
+                            (st.id && st.id.toLowerCase() === sLower) || 
+                            (st.name && st.name.toLowerCase() === sLower) || 
                             (st.key && st.key.toLowerCase() === sLower)
                         );
                         currentSubTab = sIdx !== -1 ? sIdx : 0;
@@ -653,9 +653,9 @@ Item {
             }
 
             if (t.subtabs && Array.isArray(t.subtabs)) {
-                let sIdx = t.subtabs.findIndex(st =>
-                    (st.id && st.id.toLowerCase() === lower) ||
-                    (st.name && st.name.toLowerCase() === lower) ||
+                let sIdx = t.subtabs.findIndex(st => 
+                    (st.id && st.id.toLowerCase() === lower) || 
+                    (st.name && st.name.toLowerCase() === lower) || 
                     (st.key && st.key.toLowerCase() === lower)
                 );
                 if (sIdx !== -1) {
@@ -1049,12 +1049,12 @@ Item {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
                 width: root.searchActive ? root.s(340) : root.s(260)
-
+                
                 topLeftRadius: ThemeBackend.clampedBorderRadius
                 bottomLeftRadius: ThemeBackend.clampedBorderRadius
                 topRightRadius: 0
                 bottomRightRadius: 0
-
+                
                 color: Qt.alpha(ThemeBackend.surface0, 0.4)
                 opacity: introSidebar
                 transform: Translate { x: root.s(-30) * (1.0 - introSidebar) }
@@ -1785,8 +1785,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabWelcome.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabWelcome.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabWelcome.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabWelcomeMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -1854,8 +1854,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabGeneral.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabGeneral.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabGeneral.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabGeneralMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -1935,8 +1935,8 @@ Item {
                                                 font.family: ThemeBackend.fontFamily
                                                 font.weight: tabHeaderDisplay.isDirectActive ? Font.Bold : Font.Medium
                                                 font.pixelSize: root.s(13)
-                                                color: tabHeaderDisplay.isDirectActive
-                                                    ? ThemeBackend.crust
+                                                color: tabHeaderDisplay.isDirectActive 
+                                                    ? ThemeBackend.crust 
                                                     : (tabDisplayMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                                 Layout.fillWidth: true
                                                 Layout.alignment: Qt.AlignVCenter
@@ -1948,8 +1948,8 @@ Item {
                                                 text: "󰅀"
                                                 font.family: ThemeBackend.iconFont
                                                 font.pixelSize: root.s(14)
-                                                color: tabHeaderDisplay.isDirectActive
-                                                    ? ThemeBackend.crust
+                                                color: tabHeaderDisplay.isDirectActive 
+                                                    ? ThemeBackend.crust 
                                                     : (tabDisplayMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                                 Layout.alignment: Qt.AlignVCenter
                                                 rotation: tabDisplay.expandProgress * 180 - 180
@@ -2190,8 +2190,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabTheme.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabTheme.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabTheme.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabThemeMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -2271,8 +2271,8 @@ Item {
                                                 font.family: ThemeBackend.fontFamily
                                                 font.weight: tabHeaderBar.isDirectActive ? Font.Bold : Font.Medium
                                                 font.pixelSize: root.s(13)
-                                                color: tabHeaderBar.isDirectActive
-                                                    ? ThemeBackend.crust
+                                                color: tabHeaderBar.isDirectActive 
+                                                    ? ThemeBackend.crust 
                                                     : (tabBarMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                                 Layout.fillWidth: true
                                                 Layout.alignment: Qt.AlignVCenter
@@ -2284,8 +2284,8 @@ Item {
                                                 text: "󰅀"
                                                 font.family: ThemeBackend.iconFont
                                                 font.pixelSize: root.s(14)
-                                                color: tabHeaderBar.isDirectActive
-                                                    ? ThemeBackend.crust
+                                                color: tabHeaderBar.isDirectActive 
+                                                    ? ThemeBackend.crust 
                                                     : (tabBarMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                                 Layout.alignment: Qt.AlignVCenter
                                                 rotation: tabBar.expandProgress * 180 - 180
@@ -2526,8 +2526,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabLauncher.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabLauncher.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabLauncher.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabLauncherMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -2595,8 +2595,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabDock.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabDock.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabDock.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabDockMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -2664,8 +2664,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabOsd.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabOsd.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabOsd.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabOsdMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -2733,8 +2733,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabNotifications.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabNotifications.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabNotifications.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabNotificationsMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -2802,8 +2802,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabWellbeing.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabWellbeing.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabWellbeing.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabWellbeingMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -2871,8 +2871,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabIdle.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabIdle.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabIdle.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabIdleMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
@@ -2940,8 +2940,8 @@ Item {
                                             font.family: ThemeBackend.fontFamily
                                             font.weight: tabAbout.isDirectActive ? Font.Bold : Font.Medium
                                             font.pixelSize: root.s(13)
-                                            color: tabAbout.isDirectActive
-                                                ? ThemeBackend.crust
+                                            color: tabAbout.isDirectActive 
+                                                ? ThemeBackend.crust 
                                                 : (tabAboutMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter

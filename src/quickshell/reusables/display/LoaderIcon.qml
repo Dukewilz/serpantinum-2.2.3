@@ -86,7 +86,7 @@ Item {
             root.morphProgress = 0.0;
             root.currentIndex = root.nextIndex;
             root.nextIndex = (root.nextIndex + 1) % 7;
-
+            
             morphBehavior.enabled = true;
             root.morphProgress = 1.0;
             root.kickRotation += 45.0;
@@ -125,7 +125,7 @@ Item {
             }
 
             ctx.beginPath();
-
+            
             var xc1 = (currentPts[0].x + currentPts[31].x) / 2;
             var yc1 = (currentPts[0].y + currentPts[31].y) / 2;
             ctx.moveTo(xc1, yc1);
@@ -135,7 +135,7 @@ Item {
                 var yc = (currentPts[j].y + currentPts[j+1].y) / 2;
                 ctx.quadraticCurveTo(currentPts[j].x, currentPts[j].y, xc, yc);
             }
-
+            
             ctx.quadraticCurveTo(currentPts[31].x, currentPts[31].y, xc1, yc1);
             ctx.closePath();
 

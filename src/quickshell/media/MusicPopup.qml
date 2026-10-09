@@ -34,8 +34,8 @@ Item {
         }
     }
 
-    function s(val) {
-        return Scaler.s(val);
+    function s(val) { 
+        return Scaler.s(val); 
     }
 
     function formatTime(sec) {
@@ -467,18 +467,18 @@ Item {
         id: eqLightningAnim
         running: false
         ScriptAction { script: { root.eqLightningFade = 0.0; root.eqLightningProgress = 0.0; } }
-        NumberAnimation {
-            target: root; property: "eqLightningProgress";
-            from: 0.0; to: 10.0;
-            duration: 650;
-            easing.type: Easing.OutSine
+        NumberAnimation { 
+            target: root; property: "eqLightningProgress"; 
+            from: 0.0; to: 10.0; 
+            duration: 650; 
+            easing.type: Easing.OutSine 
         }
         PauseAnimation { duration: 150 }
-        NumberAnimation {
-            target: root; property: "eqLightningFade";
-            from: 0.0; to: 1.0;
-            duration: 800;
-            easing.type: Easing.OutQuad
+        NumberAnimation { 
+            target: root; property: "eqLightningFade"; 
+            from: 0.0; to: 1.0; 
+            duration: 800; 
+            easing.type: Easing.OutQuad 
         }
         ScriptAction { script: { root.eqLightningProgress = 0.0; } }
     }
@@ -543,10 +543,10 @@ Item {
         var defaultColors = [ThemeBackend.mauve || "#cba6f7", ThemeBackend.blue || "#89b4fa", ThemeBackend.red || "#f38ba8", ThemeBackend.mauve || "#cba6f7"];
         var gradSource = root.activeGrad || (typeof MprisController !== "undefined" ? MprisController.grad : "");
         if (!gradSource) return defaultColors;
-
+        
         var hexRegex = /#[0-9a-fA-F]{6}/g;
         var matches = gradSource.match(hexRegex);
-
+        
         if (matches && matches.length >= 3) {
             return [matches[0], matches[1], matches[2], matches[0]];
         }
@@ -600,9 +600,9 @@ Item {
             temp.pending = false;
             root.eqData = temp;
             root.savedEqData = Object.assign({}, temp);
-
+            
             root.lastEqUpdate = Date.now();
-
+            
             root.triggerEqLightning();
             execCmd(Caching.qsDir + `/media/equalizer.sh preset ${presetName}`);
         }
@@ -653,7 +653,7 @@ Item {
     Item {
         id: mainWrapper
         anchors.fill: parent
-
+        
         scale: 0.92 + (0.08 * root.introMain)
         opacity: root.introMain
         transform: Translate { y: root.s(12) * (1 - root.introMain) }
@@ -673,7 +673,7 @@ Item {
                 property real w: width
                 property real h: height
                 property real r: ThemeBackend.borderRadius - inset
-
+                
                 property real straightLines: 2 * (w - 2 * inset - 2 * r) + 2 * (h - 2 * inset - 2 * r)
                 property real arcLines: 2 * Math.PI * r
                 property real perimeter: straightLines + arcLines
@@ -702,24 +702,24 @@ Item {
                     startY: maskRectOuter.h - maskRectOuter.inset - maskRectOuter.r
 
                     PathLine { x: maskRectOuter.inset; y: maskRectOuter.inset + maskRectOuter.r }
-                    PathArc {
-                        x: maskRectOuter.inset + maskRectOuter.r; y: maskRectOuter.inset
-                        radiusX: maskRectOuter.r; radiusY: maskRectOuter.r; direction: PathArc.Clockwise
+                    PathArc { 
+                        x: maskRectOuter.inset + maskRectOuter.r; y: maskRectOuter.inset 
+                        radiusX: maskRectOuter.r; radiusY: maskRectOuter.r; direction: PathArc.Clockwise 
                     }
                     PathLine { x: maskRectOuter.w - maskRectOuter.inset - maskRectOuter.r; y: maskRectOuter.inset }
-                    PathArc {
-                        x: maskRectOuter.w - maskRectOuter.inset; y: maskRectOuter.inset + maskRectOuter.r
-                        radiusX: maskRectOuter.r; radiusY: maskRectOuter.r; direction: PathArc.Clockwise
+                    PathArc { 
+                        x: maskRectOuter.w - maskRectOuter.inset; y: maskRectOuter.inset + maskRectOuter.r 
+                        radiusX: maskRectOuter.r; radiusY: maskRectOuter.r; direction: PathArc.Clockwise 
                     }
                     PathLine { x: maskRectOuter.w - maskRectOuter.inset; y: maskRectOuter.h - maskRectOuter.inset - maskRectOuter.r }
-                    PathArc {
-                        x: maskRectOuter.w - maskRectOuter.inset - maskRectOuter.r; y: maskRectOuter.h - maskRectOuter.inset
-                        radiusX: maskRectOuter.r; radiusY: maskRectOuter.r; direction: PathArc.Clockwise
+                    PathArc { 
+                        x: maskRectOuter.w - maskRectOuter.inset - maskRectOuter.r; y: maskRectOuter.h - maskRectOuter.inset 
+                        radiusX: maskRectOuter.r; radiusY: maskRectOuter.r; direction: PathArc.Clockwise 
                     }
                     PathLine { x: maskRectOuter.inset + maskRectOuter.r; y: maskRectOuter.h - maskRectOuter.inset }
-                    PathArc {
-                        x: maskRectOuter.inset; y: maskRectOuter.h - maskRectOuter.inset - maskRectOuter.r
-                        radiusX: maskRectOuter.r; radiusY: maskRectOuter.r; direction: PathArc.Clockwise
+                    PathArc { 
+                        x: maskRectOuter.inset; y: maskRectOuter.h - maskRectOuter.inset - maskRectOuter.r 
+                        radiusX: maskRectOuter.r; radiusY: maskRectOuter.r; direction: PathArc.Clockwise 
                     }
                 }
             }
@@ -734,7 +734,7 @@ Item {
                     width: Math.max(parent.width, parent.height) * 2
                     height: width
                     anchors.centerIn: parent
-
+                    
                     NumberAnimation on rotation {
                         from: 0; to: 360; duration: 5000
                         loops: Animation.Infinite
@@ -783,13 +783,13 @@ Item {
                 anchors.fill: parent
                 radius: ThemeBackend.borderRadius
                 visible: false
-                layer.enabled: true
+                layer.enabled: true 
             }
 
             Item {
                 id: bgEffectsLayer
                 anchors.fill: parent
-
+                
                 layer.enabled: true
                 layer.effect: MultiEffect {
                     maskEnabled: true
@@ -856,18 +856,18 @@ Item {
                     width: parent.width * 0.8; height: width; radius: width / 2
                     x: (parent.width / 2 - width / 2) + Math.cos(root.globalOrbitAngle * 2) * root.s(150)
                     y: (parent.height / 2 - height / 2) + Math.sin(root.globalOrbitAngle * 2) * root.s(100)
-
+                    
                     opacity: ((root.targetPlayer && root.targetPlayer.isPlaying) ? 0.025 : (root.hasTargetPlayer ? 0.01 : 0.0)) * ThemeBackend.uiAmbientStrength
                     color: (root.targetPlayer && root.targetPlayer.isPlaying) ? (ThemeBackend.mauve || "#cba6f7") : (ThemeBackend.surface2 || "#585b70")
                     Behavior on color { ColorAnimation { duration: 1000 } }
                     Behavior on opacity { NumberAnimation { duration: 1000 } }
                 }
-
+                
                 Rectangle {
                     width: parent.width * 0.9; height: width; radius: width / 2
                     x: (parent.width / 2 - width / 2) + Math.sin(root.globalOrbitAngle * 1.5) * root.s(-150)
                     y: (parent.height / 2 - height / 2) + Math.cos(root.globalOrbitAngle * 1.5) * root.s(-100)
-
+                    
                     opacity: ((root.targetPlayer && root.targetPlayer.isPlaying) ? 0.025 : (root.hasTargetPlayer ? 0.01 : 0.0)) * ThemeBackend.uiAmbientStrength
                     color: (root.targetPlayer && root.targetPlayer.isPlaying) ? (ThemeBackend.blue || "#89b4fa") : (ThemeBackend.surface1 || "#45475a")
                     Behavior on color { ColorAnimation { duration: 1000 } }
@@ -1075,7 +1075,7 @@ Item {
                                             anchors.fill: parent
                                             radius: width / 2
                                             visible: false
-                                            layer.enabled: true
+                                            layer.enabled: true 
                                         }
 
                                         Item {
@@ -1233,11 +1233,11 @@ Item {
                             spacing: root.s(6)
                             opacity: root.introText
                             transform: Translate { x: root.s(25) * (1 - root.introText) }
-
+                            
                             Item {
                                 id: titleClipRect
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: root.s(25)
+                                Layout.preferredHeight: root.s(25) 
                                 clip: true
 
                                 property int marqueeSpacing: root.s(50)
@@ -1283,13 +1283,13 @@ Item {
                                         running: root.active && titleTextMain.implicitWidth > titleClipRect.width
 
                                         PauseAnimation { duration: 3000 }
-
+                                        
                                         NumberAnimation {
                                             from: 0
                                             to: -(titleTextMain.implicitWidth + titleClipRect.marqueeSpacing)
                                             duration: (titleTextMain.implicitWidth + titleClipRect.marqueeSpacing) * 25
                                         }
-
+                                        
                                         PropertyAction { target: marqueeContainer; property: "x"; value: 0 }
                                     }
                                 }
@@ -1404,21 +1404,21 @@ Item {
 
                             RowLayout {
                                 Layout.fillWidth: true
-                                Text {
-                                    text: root.formatTime(root.currentLivePosition);
-                                    color: root.dynamicTextColor;
-                                    font.family: ThemeBackend.fontFamily;
-                                    font.bold: true;
-                                    font.pixelSize: root.s(12);
+                                Text { 
+                                    text: root.formatTime(root.currentLivePosition); 
+                                    color: root.dynamicTextColor; 
+                                    font.family: ThemeBackend.fontFamily; 
+                                    font.bold: true; 
+                                    font.pixelSize: root.s(12); 
                                     Behavior on color { ColorAnimation { duration: 600 } }
                                 }
                                 Item { Layout.fillWidth: true }
-                                Text {
-                                    text: root.formatTime(root.targetPlayer ? root.targetPlayer.length : 0);
-                                    color: root.dynamicTextColor;
-                                    font.family: ThemeBackend.fontFamily;
-                                    font.bold: true;
-                                    font.pixelSize: root.s(12);
+                                Text { 
+                                    text: root.formatTime(root.targetPlayer ? root.targetPlayer.length : 0); 
+                                    color: root.dynamicTextColor; 
+                                    font.family: ThemeBackend.fontFamily; 
+                                    font.bold: true; 
+                                    font.pixelSize: root.s(12); 
                                     Behavior on color { ColorAnimation { duration: 600 } }
                                 }
                             }
@@ -1650,7 +1650,7 @@ Item {
 
                                                 property real dist: root.eqLightningProgress - (modelData.idx - 1)
                                                 property real hitPulse: dist >= 0 && dist < 1.0 ? Math.sin((dist) * Math.PI) : 0.0
-
+                                                
                                                 property real trackPulse: 0.0
                                                 property real ringPulse: 0.0
                                                 property real flashFade: 0.0
@@ -1719,9 +1719,9 @@ Item {
                                                                 temp.preset = "Custom";
                                                                 temp.pending = true;
                                                                 root.eqData = temp;
-
+                                                                
                                                                 root.lastEqUpdate = Date.now();
-
+                                                                
                                                                 root.execCmd(Caching.qsDir + `/media/equalizer.sh set_band ${modelData.idx} ${Math.round(value)}`);
                                                             }
                                                         }
@@ -1734,7 +1734,7 @@ Item {
                                                             implicitHeight: root.s(130)
                                                             width: root.s(12); height: eqSlider.availableHeight
                                                             radius: ThemeBackend.borderRadius
-
+                                                            
                                                             color: Qt.rgba((ThemeBackend.surface0 ? ThemeBackend.surface0.r : 0.2), (ThemeBackend.surface0 ? ThemeBackend.surface0.g : 0.2), (ThemeBackend.surface0 ? ThemeBackend.surface0.b : 0.3), 0.7)
 
                                                             layer.enabled: true
@@ -1757,7 +1757,7 @@ Item {
                                                                 border.color: root.eqAccentColor
                                                                 border.width: root.s(2) + sliderDelegate.ringPulse * root.s(4)
                                                                 opacity: sliderDelegate.ringPulse * 0.8 * (1.0 - root.eqLightningFade)
-
+                                                                
                                                                 layer.enabled: true
                                                                 layer.effect: MultiEffect { blurEnabled: true; blurMax: 32; blur: 1.0 }
                                                             }
@@ -1766,7 +1766,7 @@ Item {
                                                                 width: parent.width
                                                                 height: (1 - eqSlider.visualPosition) * parent.height
                                                                 y: eqSlider.visualPosition * parent.height
-
+                                                                
                                                                 layer.enabled: true
                                                                 layer.effect: MultiEffect {
                                                                     maskEnabled: true
@@ -1778,7 +1778,7 @@ Item {
                                                                     anchors.fill: parent
                                                                     radius: ThemeBackend.borderRadius
                                                                     visible: false
-                                                                    layer.enabled: true
+                                                                    layer.enabled: true 
                                                                 }
 
                                                                 Rectangle {
@@ -1801,7 +1801,7 @@ Item {
                                                                         height: root.s(70)
                                                                         y: (sliderDelegate.trackPulse * (parent.height + height)) - height
                                                                         opacity: Math.sin(sliderDelegate.trackPulse * Math.PI) * 2.0 * (1.0 - root.eqLightningFade)
-
+                                                                        
                                                                         gradient: Gradient {
                                                                             orientation: Gradient.Vertical
                                                                             GradientStop { position: 0.0; color: "transparent" }
@@ -1810,7 +1810,7 @@ Item {
                                                                             GradientStop { position: 0.8; color: Qt.lighter(root.eqAccentColor, 1.2) }
                                                                             GradientStop { position: 1.0; color: "transparent" }
                                                                         }
-
+                                                                        
                                                                         layer.enabled: true
                                                                         layer.effect: MultiEffect {
                                                                             shadowEnabled: true; shadowColor: root.eqAccentColor; shadowBlur: 1.0; shadowOpacity: 1.0
@@ -1956,7 +1956,7 @@ Item {
                                             for (var i = 1; i <= 10; i++) {
                                                 var val = root.eqData["b" + i] !== undefined ? Number(root.eqData["b" + i]) : 0;
                                                 var norm = 1.0 - ((val + 12) / 24);
-
+                                                
                                                 var py = root.s(10) + norm * (height - root.s(30));
                                                 var px = (i - 0.5) * (width / 10);
                                                 pts.push({ x: px, y: py });
@@ -1989,7 +1989,7 @@ Item {
 
                                                         var noiseAmpX = s === 3 ? 1.0 : (4 - s) * 4;
                                                         var noiseAmpY = s === 3 ? 1.0 : (4 - s) * 5;
-
+                                                        
                                                         var sepWaveX = (s < 2) ? Math.sin(time * 3 + i + j + s) * root.s(9) * envelope : 0;
                                                         var sepWaveY = (s < 2) ? Math.cos(time * 2.5 + i - j - s) * root.s(13.5) * envelope : 0;
 
@@ -2029,7 +2029,7 @@ Item {
                                 ColumnLayout {
                                     Layout.fillWidth: true
                                     spacing: root.s(7)
-
+                                    
                                     opacity: root.introPresets
                                     transform: Translate { y: root.s(18) * (1 - root.introPresets) }
 

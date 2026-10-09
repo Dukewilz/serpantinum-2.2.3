@@ -1,0 +1,17 @@
+{
+  "quickshell/reusables/PopupSurface.qml": {
+    "before": "6bd888e97bd93fc0b6d146dfa610b14c85d124447f8a49b050cbc6bf240c00da",
+    "after": "181ffac9c6e82e33406abfba7a8f8192e44f87bc999c3f56fc979fb3853be118",
+    "mode": 420
+  },
+  "quickshell/reusables/AmbientBackdrop.qml": {
+    "before": "190e454850b2319c48f328dc091497f7f14c77b79533515b1a97864ff02fd9f7",
+    "after": "79be09a22195d0f0554efcabb46d6105d53f37dbc5180a391de883815d05c933",
+    "mode": 420
+  },
+  "quickshell/calendar/CalendarPopup.qml": {
+    "before": "993fe56895fffbcde16c561a50cf89d78b9f377f52c408458c47c3140b8ca8e3",
+    "after": "d5bf74305783be5ba665b0f0f1ec8cae47cc58b486f8ab4e0b3ce0b63923c234",
+    "mode": 420
+  }
+}
